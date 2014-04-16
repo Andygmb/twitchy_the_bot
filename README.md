@@ -20,8 +20,13 @@ Set the bot's username, password & the subreddit in config.py.
 
 In your sidebar, add these two markers where you want the stream to display:
 
->[](#TwitchStartMarker)
->
->[](#TwitchEndMarker)
+[](#TwitchStartMarker)
+
+[](#TwitchEndMarker)
 
 The streams will not display if you do not put these markers in place (as the script doesn't know where to put them.)
+
+#Running 
+
+The script only runs once, then exits. You need to run it on a cron job/schedule however often you want it to run. The recommended time is every 10 minutes. 
+
