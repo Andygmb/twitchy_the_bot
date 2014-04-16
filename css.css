@@ -1,0 +1,56 @@
+.side .md blockquote {
+border-left:0px;
+margin-left:0px;
+padding-left:0px;
+}
+
+.side .md blockquote ol li {
+list-style-type:none;
+}
+.side .md blockquote ol {
+margin:0px;
+}
+
+.side .md blockquote ol li {
+margin-top:5px;
+padding-left:75px;
+background-image:url(%%img%%);
+max-height:53px;
+height:53px;
+background-repeat:no-repeat;
+}
+
+.side .md blockquote ol li:nth-of-type(2) {
+background-position:0px -53px;
+}
+.side .md blockquote ol li:nth-of-type(3) {
+background-position:0px -106px;
+}
+.side .md blockquote ol li:nth-of-type(4) {
+background-position:0px -159px;
+}
+.side .md blockquote ol li:nth-of-type(5) {
+background-position:0px -212px;
+}
+.side .md blockquote ol li:nth-of-type(6) {
+background-position:0px -265px;
+}
+.side .md blockquote ol li:nth-of-type(7) {
+background-position:0px -318px;
+}
+.side .md blockquote ol li:nth-of-type(8) {
+background-position:0px -371px;
+}
+.side .md blockquote ol li:nth-of-type(9) {
+background-position:0px -424px;
+}
+.side .md blockquote ol li:nth-of-type(10) {
+background-position:0px -477px;
+}
+.side .md blockquote ol li:nth-of-type(11) {
+background-position:0px -530px;
+}
+.side .md blockquote ol li:nth-of-type(12) {
+background-position:0px -583px;
+}
+
