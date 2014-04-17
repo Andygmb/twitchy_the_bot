@@ -11,10 +11,6 @@ stringresults = ""
 def check_inbox():
 	#Checks our inbox and replies to the message if it's sucessful or not. 
 	inbox = r.get_inbox()
-	print "Message not understood. Please make sure your message only contains a \
-link to your twitch.tv page. E.G. \n \n >http://www.twitch.tv/USERNAME \n \n \
-[Click here to resend this message](http://www.reddit.com/message/compose?to=" + username + "&subject=Twitch.tv+request+%2Fr%2F" + str(subreddit) \
-+ "&message=http%3A%2F%2Fwww.twitch.tv%2FUSERNAMEHERE)"
 	with open("messages_seen.txt", "r") as txt:
 		already_seen = txt.read().splitlines()
 		for message in inbox:
@@ -60,9 +56,9 @@ def get_stream_list(subreddit):
 		config_list = [] 
 		#set config list to an empty list
 	stream_wikipage = r.get_wiki_page(subreddit, wiki_streams).content_md.splitlines()
-	for stream in stream_wikipage:
+	for stream in stream_wikipage[:]:
 		if stream == '':
-			stream_wikipage.remove(stream) 
+			stream_wikipage.remove(stream)
 			#Same as above
 		streamstrings += stream + "\n"
 	check_inbox()
