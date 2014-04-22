@@ -1,5 +1,5 @@
-password = "PASSWORD"
-username = "USERNAME"
-subreddit = "SUBREDDIT"
+username = "username"
+password = "password"
+subreddit = "subreddit"
 wiki_stream_config = "streamconfig"
 wiki_streams = "streams"

@@ -11,24 +11,21 @@ stringresults = ""
 def check_inbox():
 	#Checks our inbox and replies to the message if it's sucessful or not. 
 	inbox = r.get_inbox()
-	with open("messages_seen.txt", "r") as txt:
-		already_seen = txt.read().splitlines()
-		for message in inbox:
-			if message.id not in already_seen and message.subject == "Twitch.tv request /r/" + str(subreddit):
-				msg = message.body.split()
-				msg = msg[0]
-				if "twitch.tv/" in msg and len((msg[(msg.index(".tv/")+4):len(msg)])) <=25:
-					streamlist.append(msg[(msg.index(".tv/")+4):len(msg)])
-					message.reply("Your stream has been added to the list of livestreams in the sidebar, \
+	for message in inbox:
+		if message.new:
+			message.mark_as_read()
+			msg = message.body.split()
+			msg = msg[0]
+			if "twitch.tv/" in msg and len((msg[(msg.index(".tv/")+4):len(msg)])) <=25 and message.subject == "Twitch.tv request /r/" + str(subreddit):
+				streamlist.append(msg[(msg.index(".tv/")+4):len(msg)])
+				message.reply("Your stream has been added to the list of livestreams in the sidebar, \
 it will display the next time you are live on twitch.tv. \n \n Problems? Contact \
 the developer [here](http://www.reddit.com/user/Cheesydude/). Do not reply to this message.")
-				else:
-					message.reply("Message not understood. Please make sure your message only contains a \
+			else:
+				message.reply("Message not understood. Please make sure your message only contains a \
 link to your twitch.tv page. E.G. \n \n >http://www.twitch.tv/USERNAME \n \n \
-[Click here to resend this message](http://www.reddit.com/message/compose?to=" + username + "&subject=Twitch.tv+request+%2Fr%2F" + str(subreddit) \
+[Click here to resend your message](http://www.reddit.com/message/compose?to=" + username + "&subject=Twitch.tv+request+%2Fr%2F" + str(subreddit) \
 + "&message=http%3A%2F%2Fwww.twitch.tv%2FUSERNAMEHERE)")
-				with open("messages_seen.txt", "a") as output:
-					output.write("\n" + message.id)
 	return streamlist
 
 def chunker(seq, size):
