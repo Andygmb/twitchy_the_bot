@@ -32,9 +32,13 @@ Create two wiki pages on your subreddit, streams and streamconfig. These pages c
 
 * In your sidebar, add these two markers where you want the stream to display:
 
+---
     [](#TwitchStartMarker)
-    
+
     [](#TwitchEndMarker)
+
+---
+
 
 The streams will not display if you do not put these markers in place (as the script doesn't know where to put them.)
 
