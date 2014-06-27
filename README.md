@@ -10,9 +10,21 @@ Create two wiki pages on your subreddit, streams and streamconfig. These pages c
 * http://www.reddit.com/r/subreddit/wiki/edit/streams
 * http://www.reddit.com/r/subreddit/wiki/edit/streamconfig
 
-/wiki/Streams is where the bot adds new streams that it is messaged, as well as where it pulls stream names from.
+/wiki/streams is where the bot adds new streams that it is messaged, as well as where it pulls stream names from. 
+
+Example:
+
+    TwitchTVUsername
+    Another_Username
+    Username
 
 /wiki/streamconfig is an optional page, if you use it to list meta_games, the bot will only display streams that are currently playing that meta_game on twitch.tv.
+
+Example:
+
+    Call Of duty: Black ops
+    Train simulator 2014
+    Team Fortress 2
 
 Copy the CSS from css.css to your subreddit's stylesheet to have the thumbnail images display properly. This can be editted as needed for your own subreddit's stylesheet. 
 
