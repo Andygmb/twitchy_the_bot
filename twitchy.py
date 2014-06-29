@@ -79,10 +79,13 @@ def get_stream_list(subreddit):
 
 def get_stream_info(api_link,livestreams):
 	# This checks that there was any data received in the chunk, and if there was, it appends it to livestreams list.
-	data = requests.get(api_link).json()
+	try:
+		data = requests.get(api_link).json()
+		if len(data):
+			livestreams.append(data)
+	except ValueError:
+		pass
 	# Get the JSON data from our api request.
-	if len(data):
-		livestreams.append(data)
 	return livestreams
 
 
