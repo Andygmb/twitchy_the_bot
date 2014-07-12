@@ -51,11 +51,11 @@ def get_stream_list(subreddit):
 
 	# Same as above, but append the streams to a string called stream_strings. 
 	stream_wikipage = reddit.get_wiki_page(subreddit, wiki_streams).content_md.splitlines()
-	for stream in stream_wikipage:
-		if stream == '':
+	for stream in stream_wikipage[:]:
+		if not len(stream):
 			stream_wikipage.remove(stream)
-		stream_strings += stream + "\n"
-
+		else:
+			stream_strings += stream + "\n"
 	# Check inbox for new streams sent via a message. 
 	streamlist = check_inbox()
 	# Add any new streams to the wiki page, 
