@@ -1,4 +1,4 @@
-import praw, HTMLParser, json, requests
+import praw, HTMLParser, json, requests, re
 from config import username, password, subreddit, wiki_stream_config, wiki_streams
 from PIL import Image
 from StringIO import StringIO
@@ -107,7 +107,8 @@ def parse_stream_info(livestreams, config_list):
 				# Set title to the stream title 
 					title = streamer_info_dict["title"]
 				# Removing characters that can break reddit formatting
-					title = title.strip('*[]()\\>/')
+					title = re.sub(r'[*)(>/#\[\]]', '', title)
+					title = title.replace("\n", "")
 				# If the title's length is  more than 50 chars, only use the first 50 for the title on reddit, 
 				# then add on some elipises or whatever the fuck they're called
 					if len(title) >= 50:
