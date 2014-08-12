@@ -1,186 +1,204 @@
-import praw, HTMLParser, json, requests, re
-from config import username, password, subreddit, wiki_stream_config, wiki_streams
+import praw, HTMLParser, json, requests, re, time
+from config import username, password, subreddit, wiki_stream_config, wiki_streams, wiki_bans, max_stream_count
 from PIL import Image
 from StringIO import StringIO
 
+
 def chunker(seq, size):
-	# Chunks up the stream wikipage into chunks to send to twitch.tv 
-	# because otherwise it'd be wasteful to send a bunch of single requests.
-	# Shamelessly taken from a SO answer. 
-    return (seq[pos:pos + size] for pos in xrange(0, len(seq), size))
+	return (seq[pos:pos + size] for pos in xrange(0, len(seq), size))
 
-#Checks reddit inbox for streams that have been messaged to the bot. 
-def check_inbox():
-	streamlist = []
-	inbox = reddit.get_inbox()
-	for message in inbox:
-		if message.new:
-			msg = message.body.split()[0]
+class configuration():
+	def __init__(self):
+		self.r, self.subreddit = self.reddit_setup()
+		self.meta_games = self.wikipage_check(wiki_stream_config)
+		self.streams = self.wikipage_check(wiki_streams)
+		self.banned = self.wikipage_check(wiki_bans)
+		self.messages = self.check_inbox()
 
-			# This is why I should learn regexp 
-			if "twitch.tv/" in msg \
-			and len((msg[(msg.index(".tv/")+4):len(msg)])) <=25 \
-			and message.subject == "Twitch.tv request /r/" + str(subreddit):
-				streamlist.append(msg[(msg.index(".tv/")+4):len(msg)])
-				message.reply(
-					"Your stream has been added to the list of livestreams in the sidebar, \
-					it will display the next time you are live on twitch.tv. \n \n Problems? Contact \
-					the moderators [here](http://www.reddit.com/message/compose?to=%2Fr%2F"+ str(subreddit) + "). Do not reply to this message."
-					)
-				message.mark_as_read()
-			else:
-				pass
-		message.mark_as_read()
-	return streamlist
 
-def get_stream_list(subreddit):
-	# This tries to get the config settings for meta_games from wiki_stream_config, and the list of streams from wiki/streams/
-	# It will then check the bot's inbox for any new livestreams it's been messaged, and add those to the /wiki/streams/ page.
-	# after that, it chunks up the streams and requests info from twitch.tv.
-	stream_strings = ""
-	try:
-		config_list = reddit.get_wiki_page(subreddit, wiki_stream_config).content_md.splitlines() 
-		# Gets the wikipage wiki_stream_config, splits it up into a list seperated by each new line.
-		for meta_game in config_list[:]:
-		# Loop through each meta_game that is listed in wiki_stream_config
-			if meta_game == '': 
-		# If it's an empty string (as in a blank line), remove it from the config list
-				config_list.remove(meta_game)
-	except: 
-		config_list = [] 
+	def reddit_setup(self):
+		print "Logging in"
+		r = praw.Reddit("Twitch.tv sidebar bot for " + subreddit + " by /u/andygmb") #log into reddit
+		r.login(username=username, password=password)
+		sub = r.get_subreddit(subreddit)
+		return r, sub
 
-	# Same as above, but append the streams to a string called stream_strings. 
-	stream_wikipage = reddit.get_wiki_page(subreddit, wiki_streams).content_md.splitlines()
-	for stream in stream_wikipage[:]:
-		if not len(stream):
-			stream_wikipage.remove(stream)
+	def wikipage_check(self, wikipage):
+		try:
+			wiki_list = self.r.get_wiki_page(self.subreddit, wikipage).content_md.splitlines()
+			for item in wiki_list[:]:
+				wiki_list[wiki_list.index(item)] = item.lower()
+				if not len(item): 
+					wiki_list.remove(item)
+		except requests.exceptions.HTTPError:
+			print "No wikipage found at http://www.reddit.com/r/" + self.subreddit.display_name + "/wiki/" + wikipage
+			wiki_list = []
+		return wiki_list
+
+	def check_inbox(self):
+		streams = []
+		stream_strings = ""
+		inbox = self.r.get_inbox()
+		print "Checking inbox for new messages"
+		for message in inbox:
+			if message.new:
+				message_content = message.body.split()[0]
+				# This is why I should learn regexp. I am ashamed of the following code:
+				stream_name = message_content[(message_content.index(".tv/")+4):len(message_content)].lower() 
+				# If someone sees this and can fix it with regexp, please do a pull request. ^
+
+				if "twitch.tv/" in message_content \
+				and len(stream_name) <=25 \
+				and message.subject == "Twitch.tv request /r/" + str(self.subreddit) \
+				and stream_name not in self.banned \
+				and stream_name not in self.streams:
+					streams.append(stream_name)
+					message.reply(
+						"Your stream will be added to the list of livestreams in the sidebar, \
+						it will display the next time you are live on twitch.tv. \n \n Problems? [Contact \
+						the moderators here](http://www.reddit.com/message/compose?to=%2Fr%2F"\
+						+ str(self.subreddit) + "). \n \n Do not reply to this message."
+						)
+					message.mark_as_read()
+
+
+				elif stream_name in self.banned:
+					message.reply(
+						"Sorry, but that stream is banned from this subreddit. If you feel this is \
+						an incorrect ban, [please message the moderators \
+						here](http://www.reddit.com/message/compose?to=%2Fr%2F"\
+						+ str(self.subreddit) + "). \n \n Do not reply to this message."
+						)
+					message.mark_as_read()
+
+
+				elif stream_name in self.streams:
+					message.reply(
+						"Your stream is already in the list of livestreams that this bot checks. \
+						If you have just messaged your stream, please wait 5-10 minutes for the sidebar to update.\
+						\n \n Problems? Contact the moderators [here](http://www.reddit.com/message/compose?to=%2Fr%2F"\
+						+ str(self.subreddit) + "). \n \nDo not reply to this message."
+						)
+					message.mark_as_read()
+
+				else:
+					pass
+
+		if len(streams):
+			for stream in streams[:]:
+				if stream not in self.streams \
+				and stream not in self.banned:
+					stream_strings += "\n" + stream
+					self.streams.append(stream)
+				else:
+					streams.remove(stream)
+			self.subreddit.edit_wiki_page(wiki_streams, "\n".join(self.streams), reason="Adding stream(s): " + ", ".join(streams))
+			return True
 		else:
-			stream_strings += stream + "\n"
-	# Check inbox for new streams sent via a message. 
-	streamlist = check_inbox()
-	# Add any new streams to the wiki page, 
-	if len(streamlist):
-		for stream in streamlist:
-			if stream not in stream_wikipage:
-				stream_strings += "\n" + stream
-				stream_wikipage.append(stream)
-		subreddit.edit_wiki_page(wiki_streams, stream_strings, reason="Adding streams: " + ", ".join(streamlist))
+			return False
 
-	livestreams = []
-	for chunk in chunker(stream_wikipage, 100): 
-	# For chunk of 100 (or less, if the list is not 100 long.)
-	# Reset the api link
-		api_link = "http://api.justin.tv/api/stream/list.json?channel="
-		for stream in chunk:
-			api_link += stream + ","
-		livestreams = get_stream_info(api_link, livestreams)
-	results, preview_images = parse_stream_info(livestreams, config_list)
-	return results, preview_images
+	def update_stylesheet(self):
+		print "Uploading thumbnail image(s)"
+		self.subreddit.upload_image("thumbnails/img.png", "img", False)
+		stylesheet = self.r.get_stylesheet(self.subreddit)
+		stylesheet = HTMLParser.HTMLParser().unescape(stylesheet["stylesheet"])
+		self.subreddit.set_stylesheet(stylesheet, prevstyle=None)
 
-def get_stream_info(api_link,livestreams):
-	# This checks that there was any data received in the chunk, and if there was, it appends it to livestreams list.
-	try:
-		data = requests.get(api_link).json()
-		if len(data):
-			livestreams.append(data)
-	except ValueError:
-		pass
-	# Get the JSON data from our api request.
-	return livestreams
+	def update_sidebar(self):
+		print "Updating sidebar"
+		sidebar = self.r.get_settings(self.subreddit)
+		desc = HTMLParser.HTMLParser().unescape(sidebar['description'])
+		startmarker, endmarker = desc.index("[](#TwitchStartMarker)"), desc.index("[](#TwitchEndMarker)") + len("[](#TwitchEndMarker)")
+		stringresults = "".join(livestreams.streams)
+		desc = desc.replace(desc[startmarker:endmarker], "[](#TwitchStartMarker)" + "\n \n" + stringresults + "\n \n" + "[](#TwitchEndMarker)")
+		self.subreddit.update_settings(description=desc.encode('utf8'))
 
 
-def parse_stream_info(livestreams, config_list):
-	# Formats the stream info (if there was any received) to be posted to the reddit sidebar. 
-	# Also prepares the thumbnail urls to be put into a spritesheet. 
-	results, n, thumbnail_urls, preview_images= [], 0, [], []
+def chunker(seq, size):
+	return (seq[pos:pos + size] for pos in xrange(0, len(seq), size))
 
-	# If it doesn't contain anything (meaning there are no current live streams), 
-	# append results with the no streams are live string. 
-	if not len(livestreams):
-		results.append("**No streams are currently live.**\n") 
-	else:
-		for streamer_list in livestreams: 
-		# Looping through the JSON structure 
-			for streamer_info_dict in streamer_list:
-				if not len(config_list) or streamer_info_dict["channel"]["meta_game"] in config_list:
-				# If the meta_game is in config_list, do the following:
-				# Set title to the stream title 
-					title = streamer_info_dict["title"]
+class livestreams():
+	def __init__(self):
+		self.config = config
+		self.streams = []
+		self.thumbnails = []
+
+	def check_stream_length(self):
+		if len(self.streams) > max_stream_count:
+			self.streams = self.streams[:max_stream_count]
+			self.thumbnails = self.thumbnails[:max_stream_count]
+			print "There are more than " + str(max_stream_count) \
+			+ " streams currently - the amount displayed has been reduced to " + str(max_stream_count) + \
+			". You can increase this in your config.py file."
+		if not len(self.streams):
+			self.streams = '**No streams are currently live.**\n'
+			return False
+		elif len(self.streams):
+			return True
+
+	def get_livestreams(self):
+		print "Requesting stream info"
+		for chunk in chunker(self.config.streams, 100):
+			api_link = "https://api.twitch.tv/kraken/streams?channel="
+			for stream in chunk:
+				api_link += stream + ","
+			try:
+				data = requests.get(api_link).json()
+				if data["_total"] > 0:
+					self.parse_stream_info(data)
+				else:
+					pass
+			except:
+				pass
+
+	def parse_stream_info(self, data):
+		print "Parsing stream info"
+		for streamer in data["streams"]:
+			if not len(self.config.meta_games) or streamer["game"].lower() in self.config.meta_games:
+				game = streamer["game"].lower()
+				title = streamer["channel"]["status"]
 				# Removing characters that can break reddit formatting
-					title = re.sub(r'[*)(>/#\[\]]', '', title)
-					title = title.replace("\n", "")
-				# If the title's length is  more than 50 chars, only use the first 50 for the title on reddit, 
-				# then add on some elipises or whatever the fuck they're called
-					if len(title) >= 50:
-						title = title[0:47] + "..." 
-					name = streamer_info_dict["channel"]["login"]
-				# Formats the viewercount to add commas like: 1,000 
-					viewercount = "{:,}".format(streamer_info_dict["channel_count"])
-				# Appending the thumbnail url to a list to use later 
-					thumbnail_urls.append(streamer_info_dict["channel"]["screen_cap_url_small"])
-				# Constructing the final string we'll post to the reddit sidebar
-					results.append("> " + str(n) + ". " + "**[" + name + "](http://twitch.tv/" + name + ")**" + "\
-					- **" + viewercount + " Viewers**" + "\n" + "[" + title + "](http://twitch.tv/" + name + ")" + "\n") 
-					n += 1
-				# n is used above in the final string to make it an ordered list 1. 2. 3., etc.
+				title = re.sub(r'[*)(>/#\[\]]', '', title)
+				title = title.replace("\n", "")
+				#Add elipises if title is too long
+				if len(title) >= 50:
+					title = title[0:47] + "..." 
+				name = streamer["channel"]["name"].encode("utf-8")
+				viewercount = "{:,}".format(streamer["viewers"])
+				self.thumbnails.append(streamer["preview"]["small"])
+				self.streams.append("> 1. " + "**[" + name + "](http://twitch.tv/" + name + ")** - **"\
+				+ viewercount + " Viewers**" + "\n" + "[" + title + "](http://twitch.tv/" + name + ")" + "\n")
 
-	for url in thumbnail_urls:
-		preview_data = requests.get(url).content
-		# Download image
-		preview_img = Image.open(StringIO(preview_data))
-		# Convert to PIL Image
-		preview_images.append(preview_img)
-		# Add image to preview_images list
-	return results, preview_images
-	# Return the results (the list of strings we'll post to the sidebar), and the preview_images which are the thumbnail images
-
-def create_spritesheet(thumblist):
-	# Puts the thumbnail images into a spritesheet.
-	w, h = 70, 53 * (len(thumblist) or 1)
-	spritesheet = Image.new("RGB", (w, h))
-	xpos = 0
-	ypos = 0
-	for img in thumblist:
-		bbox = (xpos, ypos)
-		spritesheet.paste(img,bbox)
-		ypos = ypos + 53 
-		# Increase ypos by 53 pixels (move down the image by 53 pixels 
-		# so we can place the image in the right position next time this loops.)
-	spritesheet.save("thumbnails/img.png") 
-	# Save it as img.png in thumbnails folder
-
-
-
+	def create_spritesheet(self):
+		print "Creating image spritesheet"
+		preview_images = []
+		for url in self.thumbnails:
+			preview_data = requests.get(url).content
+			# Download image
+			preview_img = Image.open(StringIO(preview_data))
+			# Convert to PIL Image
+			preview_images.append(preview_img)
+		# Puts the thumbnail images into a spritesheet.
+		w, h = 80, 50 * (len(preview_images) or 1)
+		spritesheet = Image.new("RGB", (w, h))
+		xpos = 0
+		ypos = 0
+		for img in preview_images:
+			bbox = (xpos, ypos)
+			spritesheet.paste(img,bbox)
+			ypos = ypos + 50 
+			# Increase ypos by 50 pixels (move down the image by 50 pixels 
+			# so we can place the image in the right position next time this loops.)
+		spritesheet.save("thumbnails/img.png") 
+		# Save it as img.png in thumbnails folder
 
 if __name__ == "__main__":
-	reddit = praw.Reddit("Twitch.tv sidebar bot for " + subreddit + " by /u/andygmb") #log into reddit
-	reddit.login(username=username, password=password)
-	subreddit = reddit.get_subreddit(subreddit)
-	results, preview_images = get_stream_list(subreddit)
-	if results != ['**No streams are currently live.**\n']:
-		create_spritesheet(preview_images)
-		subreddit.upload_image("thumbnails/img.png", "img", False)
-		stylesheet = reddit.get_stylesheet(subreddit)
-		stylesheet = HTMLParser.HTMLParser().unescape(stylesheet["stylesheet"])
-		subreddit.set_stylesheet(stylesheet, prevstyle=None) 
-		# set the stylesheet as the stylesheet we just copied. We have to do this because otherwise the thumbnail images we just uploaded 
-		# would not refresh on reddit's server side, because for some reason they are cached untill you save the stylesheet.
-		sidebar = reddit.get_settings(subreddit)
-		desc = HTMLParser.HTMLParser().unescape(sidebar['description'])
-		try:
-			startmarker, endmarker = desc.index("[](#TwitchStartMarker)"), desc.index("[](#TwitchEndMarker)") + len("[](#TwitchEndMarker)")
-			stringresults = "".join(results)
-			desc = desc.replace(desc[startmarker:endmarker], "[](#TwitchStartMarker)" + "\n \n" + stringresults + "\n \n" + "[](#TwitchEndMarker)")
-			subreddit.update_settings(description=desc.encode('utf8'))
-		except:
-			pass
+	config = configuration()
+	livestreams = livestreams()
+	livestreams.get_livestreams()
+	if livestreams.check_stream_length():
+		livestreams.create_spritesheet()
+		livestreams.config.update_stylesheet()
+		livestreams.config.update_sidebar()
 	else:
-		sidebar = reddit.get_settings(subreddit)
-		desc = HTMLParser.HTMLParser().unescape(sidebar['description'])
-		try:
-			startmarker, endmarker = desc.index("[](#TwitchStartMarker)"), desc.index("[](#TwitchEndMarker)") + len("[](#TwitchEndMarker)")
-			stringresults = "".join(results)
-			desc = desc.replace(desc[startmarker:endmarker], "[](#TwitchStartMarker)" + "\n \n" + stringresults + "\n \n" + "[](#TwitchEndMarker)")
-			subreddit.update_settings(description=desc.encode('utf8'))
-		except:
-			pass
+		livestreams.config.update_sidebar()
