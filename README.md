@@ -5,11 +5,11 @@ A reddit bot that gets twitch.tv streams from wiki pages and adds them to the su
 
 #Setup
 
-* Copy the CSS from css.css to your subreddit's stylesheet to have the thumbnail images display properly. This can be edited as needed for your own subreddit's stylesheet. 
+1. Copy the CSS from css.css to your subreddit's stylesheet to have the thumbnail images display properly. This can be edited as needed for your own subreddit's stylesheet. 
 
-* Set the bot's username, password & the subreddit in config.py. 
+2. Set the bot's username, password & the subreddit in config.py. 
 
-* In your sidebar, add these two markers where you want the stream to display:
+3. In your sidebar, add these two markers where you want the stream to display:
 
 ---
     [](#TwitchStartMarker)
@@ -27,11 +27,11 @@ If you want people to be able to message the bot with streams, you need to provi
 	Add your bot's username and subreddit in the url. 
 
 
-* Create three wiki pages on your subreddit: streams, streamconfig and banned_streams. These pages can be changed in config.py if those names are already taken. 
+4. Create three wiki pages on your subreddit: streams, streamconfig and banned_streams. These pages can be changed in config.py if those names are already taken. 
 
-* http://www.reddit.com/r/subreddit/wiki/edit/streams
-* http://www.reddit.com/r/subreddit/wiki/edit/streamconfig
-* http://www.reddit.com/r/subreddit/wiki/edit/banned_streams
+	* http://www.reddit.com/r/subreddit/wiki/edit/streams
+	* http://www.reddit.com/r/subreddit/wiki/edit/streamconfig
+	* http://www.reddit.com/r/subreddit/wiki/edit/banned_streams
 
 **/wiki/streams** is where the bot adds new streams that it is messaged, as well as where it pulls stream names from. 
 
