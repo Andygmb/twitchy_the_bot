@@ -13,44 +13,43 @@ margin:0px;
 
 .side .md blockquote ol li {
 margin-top:5px;
-padding-left:75px;
+padding-left:80px;
 background-image:url(%%img%%);
-max-height:53px;
-height:53px;
+max-height:50px;
+height:50px;
 background-repeat:no-repeat;
 }
 
 .side .md blockquote ol li:nth-of-type(2) {
-background-position:0px -53px;
+background-position:0px -50px;
 }
 .side .md blockquote ol li:nth-of-type(3) {
-background-position:0px -106px;
+background-position:0px -100px;
 }
 .side .md blockquote ol li:nth-of-type(4) {
-background-position:0px -159px;
+background-position:0px -150px;
 }
 .side .md blockquote ol li:nth-of-type(5) {
-background-position:0px -212px;
+background-position:0px -200px;
 }
 .side .md blockquote ol li:nth-of-type(6) {
-background-position:0px -265px;
+background-position:0px -250px;
 }
 .side .md blockquote ol li:nth-of-type(7) {
-background-position:0px -318px;
+background-position:0px -300px;
 }
 .side .md blockquote ol li:nth-of-type(8) {
-background-position:0px -371px;
+background-position:0px -350px;
 }
 .side .md blockquote ol li:nth-of-type(9) {
-background-position:0px -424px;
+background-position:0px -400px;
 }
 .side .md blockquote ol li:nth-of-type(10) {
-background-position:0px -477px;
+background-position:0px -450px;
 }
 .side .md blockquote ol li:nth-of-type(11) {
-background-position:0px -530px;
+background-position:0px -500px;
 }
 .side .md blockquote ol li:nth-of-type(12) {
-background-position:0px -583px;
+background-position:0px -550px;
 }
-
