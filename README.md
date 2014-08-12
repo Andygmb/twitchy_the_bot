@@ -5,7 +5,29 @@ A reddit bot that gets twitch.tv streams from wiki pages and adds them to the su
 
 #Setup
 
-Create three wiki pages on your subreddit: streams, streamconfig and banned_streams. These pages can be changed in config.py if those names are already taken. 
+* Copy the CSS from css.css to your subreddit's stylesheet to have the thumbnail images display properly. This can be edited as needed for your own subreddit's stylesheet. 
+
+* Set the bot's username, password & the subreddit in config.py. 
+
+* In your sidebar, add these two markers where you want the stream to display:
+
+---
+    [](#TwitchStartMarker)
+
+    [](#TwitchEndMarker)
+
+The streams will not display if you do not put these markers in place (as the script doesn't know where to put the streams.)
+
+---
+
+If you want people to be able to message the bot with streams, you need to provide this as a message template somewhere in your sidebar:
+
+    http://www.reddit.com/message/compose?to=BOT_USERNAME&subject=Twitch.tv+request+%2Fr%2FSUBREDDITNAME&message=http%3A%2F%2Fwww.twitch.tv%2FUSERNAMEHERE
+
+	Add your bot's username and subreddit in the url. 
+
+
+* Create three wiki pages on your subreddit: streams, streamconfig and banned_streams. These pages can be changed in config.py if those names are already taken. 
 
 * http://www.reddit.com/r/subreddit/wiki/edit/streams
 * http://www.reddit.com/r/subreddit/wiki/edit/streamconfig
@@ -34,28 +56,6 @@ Create three wiki pages on your subreddit: streams, streamconfig and banned_stre
     Another_Username
     Username
 
-
-* Copy the CSS from css.css to your subreddit's stylesheet to have the thumbnail images display properly. This can be edited as needed for your own subreddit's stylesheet. 
-
-* Set the bot's username, password & the subreddit in config.py. 
-
-* In your sidebar, add these two markers where you want the stream to display:
-
----
-    [](#TwitchStartMarker)
-
-    [](#TwitchEndMarker)
-
----
-
-
-The streams will not display if you do not put these markers in place (as the script doesn't know where to put them.)
-
-If you want people to be able to message the bot with streams, you need to provide this as a message template somewhere in your sidebar:
-
-    http://www.reddit.com/message/compose?to=BOT_USERNAME&subject=Twitch.tv+request+%2Fr%2FSUBREDDITNAME&message=http%3A%2F%2Fwww.twitch.tv%2FUSERNAMEHERE
-
-Add your bot's username and subreddit in the url. 
 
 #Running
 
