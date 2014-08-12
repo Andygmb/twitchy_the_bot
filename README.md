@@ -5,10 +5,11 @@ A reddit bot that gets twitch.tv streams from wiki pages and adds them to the su
 
 #Setup
 
-Create two wiki pages on your subreddit, streams and streamconfig. These pages can be changed in config.py if those names are already taken. 
+Create three wiki pages on your subreddit: streams, streamconfig and banned_streams. These pages can be changed in config.py if those names are already taken. 
 
 * http://www.reddit.com/r/subreddit/wiki/edit/streams
 * http://www.reddit.com/r/subreddit/wiki/edit/streamconfig
+* http://www.reddit.com/r/subreddit/wiki/edit/banned_streams
 
 **/wiki/streams** is where the bot adds new streams that it is messaged, as well as where it pulls stream names from. 
 
@@ -26,7 +27,15 @@ Create two wiki pages on your subreddit, streams and streamconfig. These pages c
     Train simulator 2014
     Team Fortress 2
 
-* Copy the CSS from css.css to your subreddit's stylesheet to have the thumbnail images display properly. This can be editted as needed for your own subreddit's stylesheet. 
+**/wiki/banned_streams** contains a list of streams you can optionally ban from being displayed in your subreddit. If a user messages a banned stream, the bot will not add it to the stream list and message the user telling them to message the subreddit's moderators.
+
+##Example:
+    TwitchTVUsername
+    Another_Username
+    Username
+
+
+* Copy the CSS from css.css to your subreddit's stylesheet to have the thumbnail images display properly. This can be edited as needed for your own subreddit's stylesheet. 
 
 * Set the bot's username, password & the subreddit in config.py. 
 
@@ -48,7 +57,7 @@ If you want people to be able to message the bot with streams, you need to provi
 
 Add your bot's username and subreddit in the url. 
 
-#Running 
+#Running
 
 The script only runs once, then exits. You need to run it on a cron job/schedule however often you want it to run. The recommended time is every 10 minutes. 
 
