@@ -27,7 +27,7 @@ If you want people to be able to message the bot with streams, you need to provi
 	Add your bot's username and subreddit in the url. 
 
 
-4. Create three wiki pages on your subreddit: streams, streamconfig and banned_streams. These pages can be changed in config.py if those names are already taken. 
+4\. Create three wiki pages on your subreddit: streams, streamconfig and banned_streams. These pages can be changed in config.py if those names are already taken. 
 
 	* http://www.reddit.com/r/subreddit/wiki/edit/streams
 	* http://www.reddit.com/r/subreddit/wiki/edit/streamconfig
