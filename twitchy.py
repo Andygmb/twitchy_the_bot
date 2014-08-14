@@ -41,7 +41,8 @@ class configuration():
 		inbox = self.r.get_inbox()
 		print "Checking inbox for new messages"
 		for message in inbox:
-			if message.new:
+			if message.new \
+			and message.subject == "Twitch.tv request /r/" + str(self.subreddit):
 				message_content = message.body.split()[0]
 				# This is why I should learn regexp. I am ashamed of the following code:
 				stream_name = message_content[(message_content.index(".tv/")+4):len(message_content)].lower() 
@@ -49,7 +50,6 @@ class configuration():
 
 				if "twitch.tv/" in message_content \
 				and len(stream_name) <=25 \
-				and message.subject == "Twitch.tv request /r/" + str(self.subreddit) \
 				and stream_name not in self.banned \
 				and stream_name not in self.streams:
 					streams.append(stream_name)
