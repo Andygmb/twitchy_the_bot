@@ -45,7 +45,12 @@ class configuration():
 			and message.subject == "Twitch.tv request /r/" + str(self.subreddit):
 				message_content = message.body.split()[0]
 				# This is why I should learn regexp. I am ashamed of the following code:
-				stream_name = message_content[(message_content.index(".tv/")+4):len(message_content)].lower() 
+				try:
+					stream_name = message_content[(message_content.index(".tv/")+4):len(message_content)].lower()
+				except ValueError:
+					message.mark_as_read()
+					stream_name = "null"
+					print "Could not find stream name in message."
 				# If someone sees this and can fix it with regexp, please do a pull request. ^
 
 				if "twitch.tv/" in message_content \
