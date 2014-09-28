@@ -119,9 +119,6 @@ class configuration():
 		self.subreddit.update_settings(description=desc.encode('utf8'))
 
 
-def chunker(seq, size):
-	return (seq[pos:pos + size] for pos in xrange(0, len(seq), size))
-
 class livestreams():
 	def __init__(self):
 		self.config = config
