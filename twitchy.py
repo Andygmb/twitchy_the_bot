@@ -112,11 +112,12 @@ class configuration():
 	def update_sidebar(self):
 		print "Updating sidebar"
 		sidebar = self.r.get_settings(self.subreddit)
+		submit_text = HTMLParser.HTMLParser().unescape(sidebar["submit_text"])
 		desc = HTMLParser.HTMLParser().unescape(sidebar['description'])
 		startmarker, endmarker = desc.index("[](#TwitchStartMarker)"), desc.index("[](#TwitchEndMarker)") + len("[](#TwitchEndMarker)")
 		stringresults = "".join(livestreams.streams)
 		desc = desc.replace(desc[startmarker:endmarker], "[](#TwitchStartMarker)" + "\n \n" + stringresults + "\n \n" + "[](#TwitchEndMarker)")
-		self.subreddit.update_settings(description=desc.encode('utf8'))
+		self.subreddit.update_settings(description=desc.encode('utf8'), submit_text=submit_text)
 
 
 def chunker(seq, size):
