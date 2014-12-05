@@ -46,7 +46,15 @@ class configuration():
 				message_content = message.body.split()[0]
 				# This is why I should learn regexp. I am ashamed of the following code:
 				try:
-					stream_name = message_content[(message_content.index(".tv/")+4):len(message_content)].lower()
+					re_pattern = 'twitch.tv/(\w+)'
+					# pattern matches twitch username in the first group
+					re_result = re.search(re_pattern, message_content)
+					if re_result:
+						stream_name = re_result.group(1).lower()
+						# extract the username stored in regex group 1
+					else:
+						print("Could not find stream name in message.")
+						continue # skip to next message
 				except ValueError:
 					message.mark_as_read()
 					stream_name = "null"
