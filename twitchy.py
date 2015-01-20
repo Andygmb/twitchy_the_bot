@@ -94,9 +94,6 @@ class configuration():
 						)
 					message.mark_as_read()
 
-				else:
-					pass
-
 		if len(streams):
 			for stream in streams[:]:
 				if stream not in self.streams \
