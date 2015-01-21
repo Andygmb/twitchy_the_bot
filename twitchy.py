@@ -166,7 +166,7 @@ class livestreams():
 				game = streamer["game"].lower()
 				title = streamer["channel"]["status"]
 				# Removing characters that can break reddit formatting
-				title = re.sub(r'[*)(>/#\[\]]', '', title)
+				title = re.sub(r'[*)(>/#\[\]\\]*', '', title)
 				title = title.replace("\n", "")
 				#Add elipises if title is too long
 				if len(title) >= 50:
