@@ -2,7 +2,6 @@ import requests
 import re
 import time
 import praw
-from random import shuffle
 import HTMLParser
 import json
 from config import username, password, subreddit
@@ -31,7 +30,7 @@ class configuration():
 			raise
 
 	def wikilog(self, error):
-		self.r.edit_wiki_page(self.subreddit, "twitchbot_error_log", error, error)
+		self.r.edit_wiki_page(self.subreddit, self.config["wikipages"]["error_log"], error, error)
 
 	def reddit_setup(self):
 		print "Logging in"
