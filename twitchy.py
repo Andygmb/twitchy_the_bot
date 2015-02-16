@@ -47,7 +47,7 @@ class configuration():
 		except requests.exceptions.HTTPError:
 			print "No wikipage found at http://www.reddit.com/r/{}/wiki/{}".format(self.subreddit.display_name, wikipage)
 			self.wikilog("Couldn't access wikipage at /wiki/{}/".format(wikipage))
-			wiki_list = []
+			results = []
 		return results
 
 	def check_inbox(self):
