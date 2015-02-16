@@ -28,7 +28,8 @@ if __name__ == "__main__":
 	for wikipage in config["wikipages"].values():
 		try:
 			r.edit_wiki_page(sub, wikipage, " ", "Initial setup from setup.py")
+		except requests.exceptions.HTTPError:
+			print "Couldn't access /wiki/{}, reddit may be down.".format(wikipage)
+			wikilog(r, sub, wikipage, "Couldn't access wiki page, reddit may be down.")
 
-	except requests.exceptions.HTTPError:
-		print "Couldn't access /wiki/{}, reddit may be down.".format(wikipage)
-		wikilog(r, sub, wikipage, "Couldn't access wiki page, reddit may be down.")
+	print "http://www.reddit.com/message/compose?to={username}&subject=Twitch.tv+request+%2Fr%2F{subreddit}&message=http%3A%2F%2Fwww.twitch.tv%2F{username}".format(username=username, subreddit=subreddit)
