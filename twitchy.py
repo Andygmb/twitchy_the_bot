@@ -122,7 +122,7 @@ class configuration():
 		except ValueError:
 			self.wikilog("Couldn't find the stream markers in the sidebar.")
 			raise
-		livestreams_string = "".join(livestreams.streams)
+		livestreams_string = "".join(livestreams.streams).encode("ascii", "ignore")
 		desc = desc.replace(
 			desc[start:end], 
 			"{}\n\n{}\n\n{}".format(self.config["stream_marker_start"],livestreams_string,self.config["stream_marker_end"])
