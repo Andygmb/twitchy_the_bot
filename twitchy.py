@@ -1,5 +1,11 @@
-import praw, HTMLParser, json, requests, re, time
-from config import username, password, subreddit, wiki_stream_config, wiki_streams, wiki_bans, max_stream_count
+import requests
+import re
+import time
+import praw
+from random import shuffle
+import HTMLParser
+import json
+from config import username, password, subreddit
 from PIL import Image
 from StringIO import StringIO
 
@@ -10,15 +16,26 @@ def chunker(seq, size):
 class configuration():
 	def __init__(self):
 		self.r, self.subreddit = self.reddit_setup()
-		self.meta_games = self.wikipage_check(wiki_stream_config)
-		self.streams = self.wikipage_check(wiki_streams)
-		self.banned = self.wikipage_check(wiki_bans)
+		self.config = self.get_config()
+		self.streams = self.wikipage_check(self.config["wikipages"]["stream_list"])
+		self.banned = self.wikipage_check(self.config["wikipages"]["ban_list"])
 		self.messages = self.check_inbox()
 
+	def get_config(self):
+		try:
+			config = self.r.get_wiki_page(self.subreddit,"twitchbot_config").content_md
+			return HTMLParser.HTMLParser().unescape(json.loads(config))
+		except requests.exceptions.HTTPError:
+			print "Couldn't access config wiki page, reddit may be down."
+			self.wikilog("Couldn't access config wiki page, reddit may be down.")
+			raise
+
+	def wikilog(self, error):
+		self.r.edit_wiki_page(self.subreddit, "twitchbot_error_log", error, error)
 
 	def reddit_setup(self):
 		print "Logging in"
-		r = praw.Reddit("Twitch.tv sidebar bot for {} by /u/andygmb".format(subreddit)) #log into reddit
+		r = praw.Reddit("Twitch.tv sidebar bot for {} by /u/andygmb".format(subreddit))
 		r.login(username=username, password=password)
 		sub = r.get_subreddit(subreddit)
 		return r, sub
@@ -26,18 +43,15 @@ class configuration():
 	def wikipage_check(self, wikipage):
 		try:
 			wiki_list = self.r.get_wiki_page(self.subreddit, wikipage).content_md.splitlines()
-			for item in wiki_list[:]:
-				wiki_list[wiki_list.index(item)] = item.lower()
-				if not len(item): 
-					wiki_list.remove(item)
+			results = [item.lower() for item in wiki_list if len(item)]
 		except requests.exceptions.HTTPError:
 			print "No wikipage found at http://www.reddit.com/r/{}/wiki/{}".format(self.subreddit.display_name, wikipage)
+			self.wikilog("Couldn't access wikipage at /wiki/{}/".format(wikipage))
 			wiki_list = []
-		return wiki_list
+		return results
 
 	def check_inbox(self):
 		streams = []
-		stream_strings = ""
 		inbox = self.r.get_inbox()
 		print "Checking inbox for new messages"
 		for message in inbox:
@@ -91,19 +105,14 @@ class configuration():
 						\n\n Do not reply to this message.".format(self.subreddit)
 						)
 					message.mark_as_read()
-
-		if len(streams):
-			for stream in streams[:]:
-				if stream not in self.streams \
-				and stream not in self.banned:
-					stream_strings += "\n" + stream
-					self.streams.append(stream)
-				else:
-					streams.remove(stream)
-			self.subreddit.edit_wiki_page(wiki_streams, "\n".join(self.streams), reason="Adding stream(s): " + ", ".join(streams))
-			return True
-		else:
-			return False
+		if streams:
+			new_streams = [stream for stream in streams if stream not in [self.streams, self.banned]]
+			self.streams.append(streams)
+			self.subreddit.edit_wiki_page(
+				self.config["wikipages"]["stream_list"], 
+				"\n".join(self.streams), 
+				reason="Adding stream(s): " + ", ".join(new_streams)
+				)
 
 	def update_stylesheet(self):
 		print "Uploading thumbnail image(s)"
@@ -111,40 +120,51 @@ class configuration():
 			self.subreddit.upload_image("thumbnails/img.png", "img", False)
 		except praw.errors.APIException:
 			print "Too many images uploaded."
+			self.wikilog("Too many images uploaded to the stylesheet, max of 50 images allowed.")
 			raise
 		stylesheet = self.r.get_stylesheet(self.subreddit)
 		stylesheet = HTMLParser.HTMLParser().unescape(stylesheet["stylesheet"])
-		self.subreddit.set_stylesheet(stylesheet, prevstyle=None)
+		self.subreddit.set_stylesheet(stylesheet)
 
 	def update_sidebar(self):
 		print "Updating sidebar"
+
 		sidebar = self.r.get_settings(self.subreddit)
 		submit_text = HTMLParser.HTMLParser().unescape(sidebar["submit_text"])
 		desc = HTMLParser.HTMLParser().unescape(sidebar['description'])
-		startmarker, endmarker = desc.index("[](#TwitchStartMarker)"), desc.index("[](#TwitchEndMarker)") + len("[](#TwitchEndMarker)")
-		stringresults = "".join(livestreams.streams)
-		desc = desc.replace(desc[startmarker:endmarker], "[](#TwitchStartMarker)\n\n{}\n\n[](#TwitchEndMarker)".format(stringresults))
+		try: 
+			start = desc.index(self.config["stream_marker_start"])
+			end = desc.index(self.config["stream_marker_end"]) + len(self.config["stream_marker_end"])
+		except ValueError:
+			self.wikilog("Couldn't find the stream markers in the sidebar.")
+			raise
+		livestreams_string = "".join(livestreams.streams)
+		desc = desc.replace(
+			desc[start:end], 
+			"{}\n\n{}\n\n{}".format(self.config["stream_marker_start"],livestreams_string,self.config["stream_marker_end"])
+			)
 		self.subreddit.update_settings(description=desc.encode('utf8'), submit_text=submit_text)
 
 
 class livestreams():
-	def __init__(self):
+	def __init__(self, config):
 		self.config = config
 		self.streams = []
 		self.thumbnails = []
 
 	def check_stream_length(self):
-		if len(self.streams) > max_stream_count:
-			self.streams = self.streams[:max_stream_count]
-			self.thumbnails = self.thumbnails[:max_stream_count]
+		max_streams = int(self.config.config["max_streams_displayed"])
+		if len(self.streams) > max_streams:
+			self.streams = self.streams[:max_streams]
+			self.thumbnails = self.thumbnails[:max_streams]
 			print "There are more than {max_stream_count} streams currently \
 			- the amount displayed has been reduced to {max_stream_count}. \
-			You can increase this in your config.py file.".format(max_stream_count=max_stream_count)
-		if not len(self.streams):
-			self.streams = '**No streams are currently live.**\n'
-			return False
-		elif len(self.streams):
+			You can increase this in your config.py file.".format(max_stream_count=max_streams)
+		if len(self.streams):
 			return True
+		else:
+			self.streams = self.config.config["no_streams_string"]
+			return False
 
 	def get_livestreams(self):
 		print "Requesting stream info"
@@ -163,43 +183,47 @@ class livestreams():
 
 	def parse_stream_info(self, data):
 		print "Parsing stream info"
+		allowed_games = [str(game.lower()) for game in self.config.config["allowed_games"]]
+		print allowed_games
 		for streamer in data["streams"]:
-			if not len(self.config.meta_games) or streamer["game"].lower() in self.config.meta_games:
+			if not len(allowed_games) or streamer["game"].lower() in allowed_games:
 				game = streamer["game"].lower()
 				title = streamer["channel"]["status"]
 				# Removing characters that can break reddit formatting
 				title = re.sub(r'[*)(>/#\[\]\\]*', '', title)
 				title = title.replace("\n", "")
 				#Add elipises if title is too long
-				if len(title) >= 50:
-					title = title[0:47] + "..." 
+				if len(title) >= int(self.config.config["max_title_length"]):
+					title = title[0:int(self.config.config["max_title_length"]) - 3] + "..." 
 				name = streamer["channel"]["name"].encode("utf-8")
 				viewercount = "{:,}".format(streamer["viewers"])
-				self.thumbnails.append(streamer["preview"]["small"])
+				self.thumbnails.append(streamer["preview"]["template"])
 				self.streams.append(
-				"> 1. **[{name}](http://twitch.tv/{name})** -\
-				**{viewercount} Viewers**\n [{title}](http://twitch.tv/{name})\n"
-				.format(name=name, title=title, viewercount=viewercount)
-				)
+					HTMLParser.HTMLParser().unescape(self.config.config["string_format"].format(name=name, title=title, viewercount=viewercount))
+					)
 
 	def create_spritesheet(self):
 		print "Creating image spritesheet"
+		width, height = (
+			int(self.config.config["thumbnail_size"]["width"]), 
+			int(self.config.config["thumbnail_size"]["height"])
+			)
 		preview_images = []
 		for url in self.thumbnails:
-			preview_data = requests.get(url).content
+			preview_data = requests.get(url.format(width=str(width), height=str(height) )).content
 			# Download image
 			preview_img = Image.open(StringIO(preview_data))
 			# Convert to PIL Image
 			preview_images.append(preview_img)
 		# Puts the thumbnail images into a spritesheet.
-		w, h = 80, 50 * (len(preview_images) or 1)
+		w, h = width, height * (len(preview_images) or 1)
 		spritesheet = Image.new("RGB", (w, h))
 		xpos = 0
 		ypos = 0
 		for img in preview_images:
 			bbox = (xpos, ypos)
 			spritesheet.paste(img,bbox)
-			ypos = ypos + 50 
+			ypos = ypos + height 
 			# Increase ypos by 50 pixels (move down the image by 50 pixels 
 			# so we can place the image in the right position next time this loops.)
 		spritesheet.save("thumbnails/img.png") 
@@ -207,7 +231,7 @@ class livestreams():
 
 if __name__ == "__main__":
 	config = configuration()
-	livestreams = livestreams()
+	livestreams = livestreams(config)
 	livestreams.get_livestreams()
 	if livestreams.check_stream_length():
 		livestreams.create_spritesheet()

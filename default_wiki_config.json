@@ -1,11 +1,12 @@
 	{
 			"max_streams_displayed":"12",
+			"max_title_length":"50",
 			"stream_marker_start":"[](#startmarker)",
 			"stream_marker_end":"[](#endmarker)",
 			"string_format":"> 1. **[{name}](http://twitch.t/{name})** -**{viewercount} Viewers**\n[{title}](http://twitch.tv/{name})\n",
+			"no_streams_string":"**No streams are currently live.**\n",
 			"wikipages":{
 				"error_log":"twitchbot_error_log",
-				"config":"twitchbot_config",
 				"stream_list":"streams",
 				"ban_list":"banned_streams"
 			},
