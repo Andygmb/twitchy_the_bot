@@ -78,33 +78,17 @@ class configuration():
 				and stream_name not in self.banned \
 				and stream_name not in self.streams:
 					streams.append(stream_name)
-					message.reply(
-						"Your stream will be added to the list of livestreams in the sidebar,\
-						it will display the next time you are live on twitch.tv.\n\nProblems? \
-						[Contact the moderators here](http://www.reddit.com/message/compose?to=%2Fr%2F{})\
-						\n\n Do not reply to this message.".format(self.subreddit)
-						)
+					message.reply(self.config["messages"]["success"].format(subreddit=self.subreddit))
 					message.mark_as_read()
-
 
 				elif stream_name in self.banned:
-					message.reply(
-						"Sorry, but that stream is banned from this subreddit. If you feel this is \
-						an incorrect ban, [please message the moderators \
-						here](http://www.reddit.com/message/compose?to=%2Fr%2F{})\
-						\n\n Do not reply to this message.".format(self.subreddit)
-						)
+					message.reply(self.config["messages"]["banned"].format(subreddit=self.subreddit))
 					message.mark_as_read()
-
 
 				elif stream_name in self.streams:
-					message.reply(
-						"Your stream is already in the list of livestreams that this bot checks. \
-						If you have just messaged your stream, please wait 5-10 minutes for the sidebar to update.\
-						\n\n Problems? Contact the moderators [here](http://www.reddit.com/message/compose?to=%2Fr%2F{})\
-						\n\n Do not reply to this message.".format(self.subreddit)
-						)
+					message.reply(self.config["messages"]["already_exists"].format(subreddit=self.subreddit))
 					message.mark_as_read()
+
 		if streams:
 			new_streams = [stream for stream in streams if stream not in [self.streams, self.banned]]
 			self.streams.append(streams)
