@@ -1,14 +1,23 @@
-	{
-			"max_streams_displayed":"12",
-			"max_title_length":"50",
-			"stream_marker_start":"[](#startmarker)",
-			"stream_marker_end":"[](#endmarker)",
-			"string_format":"> 1. **[{name}](http://twitch.t/{name})** -**{viewercount} Viewers**\n[{title}](http://twitch.tv/{name})\n",
-			"no_streams_string":"**No streams are currently live.**\n",
-			"wikipages":{
-				"error_log":"twitchbot_error_log",
-				"stream_list":"streams",
-				"ban_list":"banned_streams"
-			},
-			"allowed_games":["Game of life", "Melon smashing simulator"]
-	}
+{
+		"max_streams_displayed":"12",
+		"max_title_length":"50",
+		"thumbnail_size":{
+			"width":"80",
+			"height":"50"
+		},
+		"stream_marker_start":"[](#startmarker)",
+		"stream_marker_end":"[](#endmarker)",
+		"string_format":"> 1. **[{name}](http://twitch.t/{name})** -**{viewercount} Viewers**\n[{title}](http://twitch.tv/{name})\n",
+		"no_streams_string":"**No streams are currently live.**\n",
+		"wikipages":{
+			"error_log":"twitchbot_error_log",
+			"stream_list":"streams",
+			"ban_list":"banned_streams"
+		},
+		"allowed_games":[],
+		"messages":{
+			"success":"Your stream will be added to the list of livestreams in the sidebar, it will display the next time you are live on twitch.tv.\n\nProblems? [Contact the moderators here](http://www.reddit.com/message/compose?to=%2Fr%2F{subreddit})\n\n Do not reply to this message.",
+			"banned":"Sorry, but that stream is banned from this subreddit. If you feel this is an incorrect ban, [please message the moderators here](http://www.reddit.com/message/compose?to=%2Fr%2F{subreddit})\n\n Do not reply to this message.",
+			"already_exists":"Your stream is already in the list of livestreams that this bot checks. If you have just messaged your stream, please wait 5-10 minutes for the sidebar to update.\n\n Problems? Contact the moderators [here](http://www.reddit.com/message/compose?to=%2Fr%2F{subreddit})\n\n Do not reply to this message."
+		}
+}
