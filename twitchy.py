@@ -112,7 +112,6 @@ class configuration():
 
 	def update_sidebar(self):
 		print "Updating sidebar"
-
 		sidebar = self.r.get_settings(self.subreddit)
 		submit_text = HTMLParser.HTMLParser().unescape(sidebar["submit_text"])
 		desc = HTMLParser.HTMLParser().unescape(sidebar['description'])
@@ -168,7 +167,6 @@ class livestreams():
 	def parse_stream_info(self, data):
 		print "Parsing stream info"
 		allowed_games = [str(game.lower()) for game in self.config.config["allowed_games"]]
-		print allowed_games
 		for streamer in data["streams"]:
 			if not len(allowed_games) or streamer["game"].lower() in allowed_games:
 				game = streamer["game"].lower()
