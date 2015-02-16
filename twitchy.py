@@ -26,6 +26,7 @@ class configuration():
 			return HTMLParser.HTMLParser().unescape(json.loads(config))
 		except requests.exceptions.HTTPError:
 			print "Couldn't access config wiki page, reddit may be down."
+			self.config = {"wikipages":{"error_log":"twitchbot_error_log"}}
 			self.wikilog("Couldn't access config wiki page, reddit may be down.")
 			raise
 
