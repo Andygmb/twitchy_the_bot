@@ -4,8 +4,7 @@ twitchy_the_bot
 A reddit bot that gets twitch.tv streams from wiki pages and adds them to the subreddit's sidebar if they are live. 
 
 ##Setup
-
-run setup.py
+add your bots details and the subreddit into config.py, then run setup.py
 
     python setup.py
 
