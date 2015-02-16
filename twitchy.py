@@ -208,7 +208,7 @@ class livestreams():
 			ypos = ypos + height 
 			# Increase ypos by 50 pixels (move down the image by 50 pixels 
 			# so we can place the image in the right position next time this loops.)
-		spritesheet.save("thumbnails/img.png") 
+		spritesheet.save("img.png") 
 		# Save it as img.png in thumbnails folder
 
 if __name__ == "__main__":
