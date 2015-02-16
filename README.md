@@ -10,15 +10,22 @@ run setup.py
     python setup.py
 
 This will create the following wiki pages (customizable in default_wiki_config.json)
+    
+    # Twitchy will log errors in the history function of the wiki
+    /wiki/twitchbot_error_log 
 
-    /wiki/twitchbot_error_log # Twitchy will log errors in the history function of the wiki
-    /wiki/twitchbot_config # The imported config from default_wiki_config.json
-    /wiki/banned_streams # A list of banned twitch.tv usernames seperated by newlines
-    /wiki/streams # A list of twitch.tv usernames seperated by newlines
+    # The imported config from default_wiki_config.json
+    /wiki/twitchbot_config 
+
+    # A list of banned twitch.tv usernames seperated by newlines
+    /wiki/banned_streams 
+
+     # A list of twitch.tv usernames seperated by newlines
+    /wiki/streams
 
 setup.py will also print out a string for you to put into your sidebar to allow people to PM the bot their livestreams in the correct format:
 
-    "http://www.reddit.com/message/compose?to={username}&subject=Twitch.tv+request+%2Fr%2F{subreddit}&message=http%3A%2F%2Fwww.twitch.tv%2F{username}" 
+`http://www.reddit.com/message/compose?to={username}&subject=Twitch.tv+request+%2Fr%2F{subreddit}&message=http%3A%2F%2Fwww.twitch.tv%2F{username}`
 
 with your bots username and the subreddit it's running in (taken from config.py) substituted where marked.
 
@@ -28,29 +35,30 @@ with your bots username and the subreddit it's running in (taken from config.py)
 All of the following config is editable in default_wiki_config.json before you run setup.py, and after you've ran setup.py the bot will pull it from `/wiki/twitchbot_config`
 
     {
-            "max_streams_displayed":"12",
-            "max_title_length":"50",
-            "thumbnail_size":{
-                "width":"80",
-                "height":"50"
-            },
-            "stream_marker_start":"[](#startmarker)",
-            "stream_marker_end":"[](#endmarker)",
-            "string_format":"> 1. **[{name}](http://twitch.tv/{name})** -**{viewercount} Viewers**\n[{title}](http://twitch.tv/{name})\n",
-            "no_streams_string":"**No streams are currently live.**\n",
-            "wikipages":{
-                "error_log":"twitchbot_error_log",
-                "stream_list":"streams",
-                "ban_list":"banned_streams"
-            },
-            "allowed_games":[],
-            "messages":{
-                "success":"Your stream will be added to the list of livestreams in the sidebar, it will display the next time you are live on twitch.tv.\n\nProblems? [Contact the moderators here](http://www.reddit.com/message/compose?to=%2Fr%2F{subreddit})\n\n Do not reply to this message.",
-                "banned":"Sorry, but that stream is banned from this subreddit. If you feel this is an incorrect ban, [please message the moderators here](http://www.reddit.com/message/compose?to=%2Fr%2F{subreddit})\n\n Do not reply to this message.",
-                "already_exists":"Your stream is already in the list of livestreams that this bot checks. If you have just messaged your stream, please wait 5-10 minutes for the sidebar to update.\n\n Problems? Contact the moderators [here](http://www.reddit.com/message/compose?to=%2Fr%2F{subreddit})\n\n Do not reply to this message."
-            }
+    "max_streams_displayed":"12",
+    "max_title_length":"50",
+    "thumbnail_size":{
+        "width":"80",
+        "height":"50"
+    },
+    "stream_marker_start":"[](#startmarker)",
+    "stream_marker_end":"[](#endmarker)",
+    "string_format":"> 1. **[{name}](http://twitch.tv/{name})** -**{viewercount} Viewers**\n[{title}](http://twitch.tv/{name})\n",
+    "no_streams_string":"**No streams are currently live.**\n",
+    "wikipages":{
+        "error_log":"twitchbot_error_log",
+        "stream_list":"streams",
+        "ban_list":"banned_streams"
+    },
+    "allowed_games":[],
+    "messages":{
+        "success":"Your stream will be added to the list of livestreams in the sidebar, it will display the next time you are live on twitch.tv.\n\nProblems? [Contact the moderators here](http://www.reddit.com/message/compose?to=%2Fr%2F{subreddit})\n\n Do not reply to this message.",
+        "banned":"Sorry, but that stream is banned from this subreddit. If you feel this is an incorrect ban, [please message the moderators here](http://www.reddit.com/message/compose?to=%2Fr%2F{subreddit})\n\n Do not reply to this message.",
+        "already_exists":"Your stream is already in the list of livestreams that this bot checks. If you have just messaged your stream, please wait 5-10 minutes for the sidebar to update.\n\n Problems? Contact the moderators [here](http://www.reddit.com/message/compose?to=%2Fr%2F{subreddit})\n\n Do not reply to this message."
+    }
     }
 
+### Config information
 
 `string_format` is the format that each twitch stream will be displayed as in your sidebar - `{name}` is the users twitch.tv username, `{viewercount}` is the viewer count on twitch.tv & `{title}` is the title they've set on twitch.tv (which can be limited in length with `max_title_length`)
 
