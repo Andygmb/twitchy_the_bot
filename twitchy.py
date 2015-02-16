@@ -18,7 +18,7 @@ class configuration():
 
 	def reddit_setup(self):
 		print "Logging in"
-		r = praw.Reddit("Twitch.tv sidebar bot for " + subreddit + " by /u/andygmb") #log into reddit
+		r = praw.Reddit("Twitch.tv sidebar bot for {} by /u/andygmb".format(subreddit)) #log into reddit
 		r.login(username=username, password=password)
 		sub = r.get_subreddit(subreddit)
 		return r, sub
@@ -31,7 +31,7 @@ class configuration():
 				if not len(item): 
 					wiki_list.remove(item)
 		except requests.exceptions.HTTPError:
-			print "No wikipage found at http://www.reddit.com/r/" + self.subreddit.display_name + "/wiki/" + wikipage
+			print "No wikipage found at http://www.reddit.com/r/{}/wiki/{}".format(self.subreddit.display_name, wikipage)
 			wiki_list = []
 		return wiki_list
 
@@ -42,9 +42,8 @@ class configuration():
 		print "Checking inbox for new messages"
 		for message in inbox:
 			if message.new \
-			and message.subject == "Twitch.tv request /r/" + str(self.subreddit):
+			and message.subject == "Twitch.tv request /r/{}".format(self.subreddit):
 				message_content = message.body.split()[0]
-				# This is why I should learn regexp. I am ashamed of the following code:
 				try:
 					re_pattern = 'twitch.tv/(\w+)'
 					# pattern matches twitch username in the first group
@@ -53,13 +52,12 @@ class configuration():
 						stream_name = re_result.group(1).lower()
 						# extract the username stored in regex group 1
 					else:
-						print("Could not find stream name in message.")
+						print "Could not find stream name in message."
 						continue # skip to next message
 				except ValueError:
 					message.mark_as_read()
 					stream_name = "null"
 					print "Could not find stream name in message."
-				# If someone sees this and can fix it with regexp, please do a pull request. ^
 
 				if "twitch.tv/" in message_content \
 				and len(stream_name) <=25 \
@@ -67,10 +65,10 @@ class configuration():
 				and stream_name not in self.streams:
 					streams.append(stream_name)
 					message.reply(
-						"Your stream will be added to the list of livestreams in the sidebar, \
-						it will display the next time you are live on twitch.tv. \n \n Problems? [Contact \
-						the moderators here](http://www.reddit.com/message/compose?to=%2Fr%2F"\
-						+ str(self.subreddit) + "). \n \n Do not reply to this message."
+						"Your stream will be added to the list of livestreams in the sidebar,\
+						it will display the next time you are live on twitch.tv.\n\nProblems? \
+						[Contact the moderators here](http://www.reddit.com/message/compose?to=%2Fr%2F{})\
+						\n\n Do not reply to this message.".format(self.subreddit)
 						)
 					message.mark_as_read()
 
@@ -79,8 +77,8 @@ class configuration():
 					message.reply(
 						"Sorry, but that stream is banned from this subreddit. If you feel this is \
 						an incorrect ban, [please message the moderators \
-						here](http://www.reddit.com/message/compose?to=%2Fr%2F"\
-						+ str(self.subreddit) + "). \n \n Do not reply to this message."
+						here](http://www.reddit.com/message/compose?to=%2Fr%2F{})\
+						\n\n Do not reply to this message.".format(self.subreddit)
 						)
 					message.mark_as_read()
 
@@ -89,8 +87,8 @@ class configuration():
 					message.reply(
 						"Your stream is already in the list of livestreams that this bot checks. \
 						If you have just messaged your stream, please wait 5-10 minutes for the sidebar to update.\
-						\n \n Problems? Contact the moderators [here](http://www.reddit.com/message/compose?to=%2Fr%2F"\
-						+ str(self.subreddit) + "). \n \nDo not reply to this message."
+						\n\n Problems? Contact the moderators [here](http://www.reddit.com/message/compose?to=%2Fr%2F{})\
+						\n\n Do not reply to this message.".format(self.subreddit)
 						)
 					message.mark_as_read()
 
@@ -109,7 +107,11 @@ class configuration():
 
 	def update_stylesheet(self):
 		print "Uploading thumbnail image(s)"
-		self.subreddit.upload_image("thumbnails/img.png", "img", False)
+		try:
+			self.subreddit.upload_image("thumbnails/img.png", "img", False)
+		except praw.errors.APIException:
+			print "Too many images uploaded."
+			raise
 		stylesheet = self.r.get_stylesheet(self.subreddit)
 		stylesheet = HTMLParser.HTMLParser().unescape(stylesheet["stylesheet"])
 		self.subreddit.set_stylesheet(stylesheet, prevstyle=None)
@@ -121,7 +123,7 @@ class configuration():
 		desc = HTMLParser.HTMLParser().unescape(sidebar['description'])
 		startmarker, endmarker = desc.index("[](#TwitchStartMarker)"), desc.index("[](#TwitchEndMarker)") + len("[](#TwitchEndMarker)")
 		stringresults = "".join(livestreams.streams)
-		desc = desc.replace(desc[startmarker:endmarker], "[](#TwitchStartMarker)" + "\n \n" + stringresults + "\n \n" + "[](#TwitchEndMarker)")
+		desc = desc.replace(desc[startmarker:endmarker], "[](#TwitchStartMarker)\n\n{}\n\n[](#TwitchEndMarker)".format(stringresults))
 		self.subreddit.update_settings(description=desc.encode('utf8'), submit_text=submit_text)
 
 
@@ -135,9 +137,9 @@ class livestreams():
 		if len(self.streams) > max_stream_count:
 			self.streams = self.streams[:max_stream_count]
 			self.thumbnails = self.thumbnails[:max_stream_count]
-			print "There are more than " + str(max_stream_count) \
-			+ " streams currently - the amount displayed has been reduced to " + str(max_stream_count) + \
-			". You can increase this in your config.py file."
+			print "There are more than {max_stream_count} streams currently \
+			- the amount displayed has been reduced to {max_stream_count}. \
+			You can increase this in your config.py file.".format(max_stream_count=max_stream_count)
 		if not len(self.streams):
 			self.streams = '**No streams are currently live.**\n'
 			return False
@@ -174,8 +176,11 @@ class livestreams():
 				name = streamer["channel"]["name"].encode("utf-8")
 				viewercount = "{:,}".format(streamer["viewers"])
 				self.thumbnails.append(streamer["preview"]["small"])
-				self.streams.append("> 1. " + "**[" + name + "](http://twitch.tv/" + name + ")** - **"\
-				+ viewercount + " Viewers**" + "\n" + "[" + title + "](http://twitch.tv/" + name + ")" + "\n")
+				self.streams.append(
+				"> 1. **[{name}](http://twitch.tv/{name})** -\
+				**{viewercount} Viewers**\n [{title}](http://twitch.tv/{name})\n"
+				.format(name=name, title=title, viewercount=viewercount)
+				)
 
 	def create_spritesheet(self):
 		print "Creating image spritesheet"
