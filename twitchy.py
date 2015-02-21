@@ -197,7 +197,6 @@ class livestreams():
 			preview_img = Image.open(StringIO(preview_data))
 			# Convert to PIL Image
 			preview_images.append(preview_img)
-		# Puts the thumbnail images into a spritesheet.
 		w, h = width, height * (len(preview_images) or 1)
 		spritesheet = Image.new("RGB", (w, h))
 		xpos = 0
@@ -206,10 +205,7 @@ class livestreams():
 			bbox = (xpos, ypos)
 			spritesheet.paste(img,bbox)
 			ypos = ypos + height 
-			# Increase ypos by 50 pixels (move down the image by 50 pixels 
-			# so we can place the image in the right position next time this loops.)
-		spritesheet.save("img.png") 
-		# Save it as img.png in thumbnails folder
+		spritesheet.save("img.png")
 
 if __name__ == "__main__":
 	config = configuration()
