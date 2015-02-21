@@ -91,7 +91,7 @@ class configuration():
 
 		if streams:
 			new_streams = [stream for stream in streams if stream not in [self.streams, self.banned]]
-			self.streams.append(streams)
+			self.streams.extend(new_streams)
 			self.subreddit.edit_wiki_page(
 				self.config["wikipages"]["stream_list"], 
 				"\n".join(self.streams), 
@@ -101,7 +101,7 @@ class configuration():
 	def update_stylesheet(self):
 		print "Uploading thumbnail image(s)"
 		try:
-			self.subreddit.upload_image("thumbnails/img.png", "img", False)
+			self.subreddit.upload_image("img.png", "img", False)
 		except praw.errors.APIException:
 			print "Too many images uploaded."
 			self.wikilog("Too many images uploaded to the stylesheet, max of 50 images allowed.")
