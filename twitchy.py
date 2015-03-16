@@ -90,7 +90,7 @@ class configuration():
 					message.mark_as_read()
 
 		if streams:
-			new_streams = [stream for stream in streams if stream not in [self.streams, self.banned]]
+			new_streams = list(set([stream for stream in streams if stream not in [self.streams, self.banned]]))
 			self.streams.extend(new_streams)
 			self.subreddit.edit_wiki_page(
 				self.config["wikipages"]["stream_list"], 
