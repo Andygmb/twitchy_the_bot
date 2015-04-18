@@ -4,6 +4,7 @@ import time
 import praw
 import HTMLParser
 import json
+import os
 from config import username, password, subreddit
 from PIL import Image
 from StringIO import StringIO
@@ -23,7 +24,13 @@ class configuration():
 	def get_config(self):
 		try:
 			config = self.r.get_wiki_page(self.subreddit,"twitchbot_config").content_md
-			return HTMLParser.HTMLParser().unescape(json.loads(config))
+			try:
+				config = json.loads(config)
+			except ValueError:
+				print "No JSON object could be found, or the config page has broken JSON.\nUse www.jsonlint.com to validate your wiki config page."
+				self.wikilog("No JSON object could be decoded from twitchbot config wiki page.")
+				raise
+			return HTMLParser.HTMLParser().unescape(config)
 		except requests.exceptions.HTTPError:
 			print "Couldn't access config wiki page, reddit may be down."
 			self.config = {"wikipages":{"error_log":"twitchbot_error_log"}}
@@ -206,6 +213,7 @@ class livestreams():
 			spritesheet.paste(img,bbox)
 			ypos = ypos + height 
 		spritesheet.save("img.png")
+
 
 if __name__ == "__main__":
 	config = configuration()
