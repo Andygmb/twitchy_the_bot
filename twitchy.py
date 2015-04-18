@@ -4,7 +4,6 @@ import time
 import praw
 import HTMLParser
 import json
-import os
 from config import username, password, subreddit
 from PIL import Image
 from StringIO import StringIO
