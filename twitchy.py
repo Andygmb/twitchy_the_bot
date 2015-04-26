@@ -184,10 +184,11 @@ class livestreams():
 				if len(title) >= int(self.config.config["max_title_length"]):
 					title = title[0:int(self.config.config["max_title_length"]) - 3] + "..." 
 				name = streamer["channel"]["name"].encode("utf-8")
+				display_name = streamer["channel"]["display_name"].encode("utf-8")
 				viewercount = "{:,}".format(streamer["viewers"])
 				self.thumbnails.append(streamer["preview"]["template"])
 				self.streams.append(
-					HTMLParser.HTMLParser().unescape(self.config.config["string_format"].format(name=name, title=title, viewercount=viewercount))
+					HTMLParser.HTMLParser().unescape(self.config.config["string_format"].format(name=name, title=title, viewercount=viewercount, display_name=display_name))
 					)
 
 	def create_spritesheet(self):
