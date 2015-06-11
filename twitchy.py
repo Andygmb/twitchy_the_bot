@@ -41,7 +41,7 @@ class configuration():
 
 	def reddit_setup(self):
 		print "Logging in"
-		r = praw.Reddit("Twitch.tv sidebar bot for {} by /u/andygmb".format(subreddit))
+		r = praw.Reddit("Sidebar livestream updater for /r/{} by /u/andygmb ".format(subreddit))
 		r.login(username=username, password=password)
 		sub = r.get_subreddit(subreddit)
 		return r, sub
