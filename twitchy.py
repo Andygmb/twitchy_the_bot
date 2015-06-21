@@ -130,7 +130,7 @@ class configuration():
 		livestreams_string = "".join(livestreams.streams).encode("ascii", "ignore")
 		desc = desc.replace(
 			desc[start:end], 
-			"{}\n\n{}\n\n{}".format(self.config["stream_marker_start"],livestreams_string,self.config["stream_marker_end"])
+			"{} {} {}".format(self.config["stream_marker_start"],livestreams_string,self.config["stream_marker_end"])
 			)
 		self.subreddit.update_settings(description=desc.encode('utf8'), submit_text=submit_text)
 
