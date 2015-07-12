@@ -28,33 +28,59 @@ setup.py will also print out a string for you to put into your sidebar to allow 
 
 with your bots username and the subreddit it's running in (taken from config.py) substituted where marked.
 
+### OAuth configuration
+The use of OAuth in PRAW requires a praw.ini file located in your config folder (varies by platform) or in the root directory if this project (overrides global settings)
+
+No matter where you put it, you need a praw.ini file with the following included:
+```
+[DEFAULT]
+domain: www.reddit.com
+oauth_client_id: <client_id>
+oauth_client_secret: <secret_access_key>
+oauth_redirect_uri: http://127.0.0.1:65010/authorize_callback
+oauth_refresh_token: <refresh_token>
+```
+#### Authenticating with OAuth
+
+There a few steps to authenticate via OAuth:
+1. Get the `client_id` and `secret_access_key` from [Reddit](https://www.reddit.com/prefs/apps/)
+2. Copy `client_id` to praw.ini as `oath_client_id` and `secret_access_key` as `oauth_client_secret` in praw.ini
+3. Run `authenticate.py`. It will open up your default web browser and present a page to grant access to the application
+4. You will be redirected to the url at `oauth_redirect_uri` in praw.ini. If you leave the default value, you will likely get a page not found error. This is okay. All you need is the code at the end of URL: `http://127.0.0.1:65010/authorize_callback?state=obtainingAuthentication&code=THIS_IS_THE_CODE_YOU_WANT`
+5. Copy the code into the prompt and press enter
+6. The script gets the refresh token and prints it to stdout. Copy the refresh token to praw.ini as `oauth_refresh_token`
+
+Now you will be good to go! You will not have to re-run authenticate.py unless you de-authorize your application from Reddit or you allow your refresh token to expire.
+
+See [here](http://praw.readthedocs.org/en/latest/pages/oauth.html) for more details on the PRAW implementation of OAuth
+
 
 ###twitchbot_config
 
 All of the following config is editable in default_wiki_config.json before you run setup.py, and after you've ran setup.py the bot will pull it from `/wiki/twitchbot_config`
 
     {
-    "max_streams_displayed":"12",
-    "max_title_length":"50",
-    "thumbnail_size":{
-        "width":"80",
-        "height":"50"
-    },
-    "stream_marker_start":"[](#startmarker)",
-    "stream_marker_end":"[](#endmarker)",
-    "string_format":"> 1. **[{name}](http://twitch.tv/{name})** -**{viewercount} Viewers**\n[{title}](http://twitch.tv/{name})\n",
-    "no_streams_string":"**No streams are currently live.**\n",
-    "wikipages":{
-        "error_log":"twitchbot_error_log",
-        "stream_list":"streams",
-        "ban_list":"banned_streams"
-    },
-    "allowed_games":[],
-    "messages":{
-        "success":"Your stream will be added to the list of livestreams in the sidebar, it will display the next time you are live on twitch.tv.\n\nProblems? [Contact the moderators here](http://www.reddit.com/message/compose?to=%2Fr%2F{subreddit})\n\n Do not reply to this message.",
-        "banned":"Sorry, but that stream is banned from this subreddit. If you feel this is an incorrect ban, [please message the moderators here](http://www.reddit.com/message/compose?to=%2Fr%2F{subreddit})\n\n Do not reply to this message.",
-        "already_exists":"Your stream is already in the list of livestreams that this bot checks. If you have just messaged your stream, please wait 5-10 minutes for the sidebar to update.\n\n Problems? Contact the moderators [here](http://www.reddit.com/message/compose?to=%2Fr%2F{subreddit})\n\n Do not reply to this message."
-    }
+        "max_streams_displayed":"12",
+        "max_title_length":"50",
+        "thumbnail_size":{
+            "width":"80",
+            "height":"50"
+        },
+        "stream_marker_start":"[](#startmarker)",
+        "stream_marker_end":"[](#endmarker)",
+        "string_format":"> 1. **[{name}](http://twitch.tv/{name})** -**{viewercount} Viewers**\n[{title}](http://twitch.tv/{name})\n",
+        "no_streams_string":"**No streams are currently live.**\n",
+        "wikipages":{
+            "error_log":"twitchbot_error_log",
+            "stream_list":"streams",
+            "ban_list":"banned_streams"
+        },
+        "allowed_games":[],
+        "messages":{
+            "success":"Your stream will be added to the list of livestreams in the sidebar, it will display the next time you are live on twitch.tv.\n\nProblems? [Contact the moderators here](http://www.reddit.com/message/compose?to=%2Fr%2F{subreddit})\n\n Do not reply to this message.",
+            "banned":"Sorry, but that stream is banned from this subreddit. If you feel this is an incorrect ban, [please message the moderators here](http://www.reddit.com/message/compose?to=%2Fr%2F{subreddit})\n\n Do not reply to this message.",
+            "already_exists":"Your stream is already in the list of livestreams that this bot checks. If you have just messaged your stream, please wait 5-10 minutes for the sidebar to update.\n\n Problems? Contact the moderators [here](http://www.reddit.com/message/compose?to=%2Fr%2F{subreddit})\n\n Do not reply to this message."
+        }
     }
 
 ### Config information

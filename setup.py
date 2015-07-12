@@ -2,14 +2,14 @@ import praw
 import json
 import HTMLParser
 import requests
-from config import username, password, subreddit
+from config import refresh_token, subreddit
 
 def wikilog(r, subreddit, wikipage, error):
 	r.edit_wiki_page(subreddit, wikipage, error, error)
 
 if __name__ == "__main__":
 	r = praw.Reddit("Twitch.tv sidebar bot for {} by /u/andygmb".format(subreddit))
-	r.login(username=username, password=password)
+	r.refresh_access_information()
 	sub = r.get_subreddit(subreddit)
 
 	with open("default_wiki_config.json", "r") as configjson:

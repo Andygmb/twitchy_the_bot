@@ -42,7 +42,7 @@ class configuration():
 	def reddit_setup(self):
 		print "Logging in"
 		r = praw.Reddit("Sidebar livestream updater for /r/{} by /u/andygmb ".format(subreddit))
-		r.login(username=username, password=password)
+		r.refresh_access_information()
 		sub = r.get_subreddit(subreddit)
 		return r, sub
 
