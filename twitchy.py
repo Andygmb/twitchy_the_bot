@@ -19,7 +19,7 @@ class configuration():
         self.r, self.subreddit = self.reddit_setup()
         self.config = self.get_config()
         self.streams = self.wikipage_check(self.config["wikipages"]["stream_list"])
-        self.banned = self.wikipage_check(self.config["wikipages"]["ban_list"])
+        self.banned = self.bans()
         self.messages = self.check_inbox()
 
     def get_config(self):
@@ -143,6 +143,23 @@ class configuration():
         else:
             print "The stream content is exactly the same as what is already on https://www.reddit.com/r/{}/wiki/{}. Skipping update.".format(self.subreddit, self.config["wikipages"]["stream_location"])
             return False
+
+    def bans(self):
+        banned_streams = self.wikipage_check(self.config["wikipages"]["ban_list"])
+        bans = []
+        for stream in banned_streams:
+            if stream in self.streams[:]:
+                bans.append(stream)
+                self.streams.remove(stream)
+        if bans:
+            print "Removing banned stream(s): " + ", ".join(bans)
+            self.subreddit.edit_wiki_page(
+                self.config["wikipages"]["stream_list"],
+                "\n".join(self.streams),
+                reason="Removing banned stream(s): " + ", ".join(bans)
+            )
+        return self.wikipage_check(self.config["wikipages"]["ban_list"])
+
 
 class livestreams():
     def __init__(self, config):
