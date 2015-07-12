@@ -2,7 +2,6 @@ import os
 
 import praw
 import json
-import HTMLParser
 import requests
 from config import username, password, subreddit
 
