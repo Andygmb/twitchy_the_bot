@@ -163,7 +163,7 @@ class configuration():
 
 class livestreams():
     def __init__(self, config):
-        self.config = config
+        self.config = config # This is kind of retarded, should probably subclass or just have the entire bot in one class.
         self.streams = []
         self.thumbnails = []
 
@@ -201,20 +201,22 @@ class livestreams():
         allowed_games = [str(game.lower()) for game in self.config.config["allowed_games"]]
         for streamer in data["streams"]:
             if not len(allowed_games) or streamer["game"].lower() in allowed_games:
-                game = streamer["game"].lower()
-                title = streamer["channel"]["status"]
                 # Removing characters that can break reddit formatting
-                title = re.sub(r'[*)(>/#\[\]\\]*', '', title)
-                title = title.replace("\n", "")
+                game = streamer["game"].lower()
+                game = re.sub(r'[*)(>/#\[\]\\]*', '', game).replace("\n", "").encode("utf-8")
+                title = streamer["channel"]["status"]
+                title = re.sub(r'[*)(>/#\[\]\\]*', '', title).replace("\n", "").encode("utf-8")
                 #Add elipises if title is too long
                 if len(title) >= int(self.config.config["max_title_length"]):
                     title = title[0:int(self.config.config["max_title_length"]) - 3] + "..."
-                name = streamer["channel"]["name"].encode("utf-8")
-                display_name = streamer["channel"]["display_name"].encode("utf-8")
+                name = streamer["channel"]["name"]
+                name = re.sub(r'[*)(>/#\[\]\\]*', '', name).replace("\n", "").encode("utf-8")
+                display_name = streamer["channel"]["display_name"]
+                display_name = re.sub(r'[*)(>/#\[\]\\]*', '', display_name).replace("\n", "").encode("utf-8")
                 viewercount = "{:,}".format(streamer["viewers"])
                 self.thumbnails.append(streamer["preview"]["template"])
                 self.streams.append(
-                    HTMLParser.HTMLParser().unescape(self.config.config["string_format"].format(name=name, title=title, viewercount=viewercount, display_name=display_name))
+                    HTMLParser.HTMLParser().unescape(self.config.config["string_format"].format(name=name, title=title, viewercount=viewercount, display_name=display_name, game=game))
                 )
 
     def create_spritesheet(self):
