@@ -5,8 +5,8 @@
       "width":"80",
       "height":"50"
   },
-  "stream_marker_start":"[](#startmarker)\n",
-  "stream_marker_end":"\n[](#endmarker)",
+  "stream_marker_start":"[](#startmarker)",
+  "stream_marker_end":"[](#endmarker)",
   "string_format":"> 1. **[{name}](http://twitch.tv/{name})** - **{viewercount} Viewers**\n[{title}](http://twitch.tv/{name})\n",
   "no_streams_string":"**No streams are currently live.**\n",
   "wikipages":{
