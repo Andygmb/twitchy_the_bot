@@ -1,10 +1,12 @@
-import requests
+
 import re
-import time
+
+from config import username, password, subreddit
+
+import requests
 import praw
 import HTMLParser
 import json
-from config import username, password, subreddit
 from PIL import Image
 from StringIO import StringIO
 
@@ -121,9 +123,7 @@ class configuration():
         self.subreddit.set_stylesheet(stylesheet)
 
     def update_sidebar(self):
-        print "Updating sidebar"
-        stream_location = self.r.get_wiki_page(self.subreddit, self.config["wikipages"]["stream_location"])
-        content = stream_location.content_md
+        content = self.r.get_wiki_page(self.subreddit, self.config["wikipages"]["stream_location"]).content_md
         try:
             start = content.index(self.config["stream_marker_start"])
             end = content.index(self.config["stream_marker_end"]) + len(self.config["stream_marker_end"])
@@ -132,12 +132,17 @@ class configuration():
             self.wikilog("Couldn't find the stream markers in /wiki/{}".format(self.config["wikipages"]["stream_location"]))
             raise
         livestreams_string = "".join(livestreams.streams).encode("ascii", "ignore")
-        desc = content.replace(
-            content[start:end],
-            "{} {} {}".format(self.config["stream_marker_start"],livestreams_string,self.config["stream_marker_end"])
-        )
-        self.r.edit_wiki_page(self.subreddit, self.config["wikipages"]["stream_location"], content.encode("utf8"), reason="Updating livestreams")
-
+        if content[start:end] != "{} {} {}".format(self.config["stream_marker_start"],livestreams_string,self.config["stream_marker_end"]):
+            print "Updating sidebar"
+            content = content.replace(
+                content[start:end],
+                "{} {} {}".format(self.config["stream_marker_start"],livestreams_string,self.config["stream_marker_end"])
+            )
+            self.r.edit_wiki_page(self.subreddit, self.config["wikipages"]["stream_location"], content.encode("utf8"), reason="Updating livestreams")
+            return True
+        else:
+            print "The stream content is exactly the same as what is already on https://www.reddit.com/r/{}/wiki/{}. Skipping update.".format(self.subreddit, self.config["wikipages"]["stream_location"])
+            return False
 
 class livestreams():
     def __init__(self, config):
@@ -224,8 +229,8 @@ if __name__ == "__main__":
     livestreams = livestreams(config)
     livestreams.get_livestreams()
     if livestreams.check_stream_length():
-        livestreams.create_spritesheet()
-        livestreams.config.update_stylesheet()
-        livestreams.config.update_sidebar()
+        if livestreams.config.update_sidebar():
+            livestreams.create_spritesheet()
+            livestreams.config.update_stylesheet()
     else:
         livestreams.config.update_sidebar()
