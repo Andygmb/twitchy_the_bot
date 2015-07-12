@@ -4,7 +4,7 @@ import time
 import praw
 import HTMLParser
 import json
-from config import username, password, subreddit
+from config import subreddit
 from PIL import Image
 from StringIO import StringIO
 
@@ -13,14 +13,14 @@ def chunker(seq, size):
 	return (seq[pos:pos + size] for pos in xrange(0, len(seq), size))
 
 class configuration():
-	def __init__(self):
-		self.r, self.subreddit = self.reddit_setup()
-		self.config = self.get_config()
-		self.streams = self.wikipage_check(self.config["wikipages"]["stream_list"])
-		self.banned = self.wikipage_check(self.config["wikipages"]["ban_list"])
-		self.messages = self.check_inbox()
+    def __init__(self):
+        self.r, self.subreddit = self.reddit_setup()
+        self.config = self.get_config()
+        self.streams = self.wikipage_check(self.config["wikipages"]["stream_list"])
+        self.banned = self.wikipage_check(self.config["wikipages"]["ban_list"])
+        self.messages = self.check_inbox()
 
-	def get_config(self):
+    def get_config(self):
 		try:
 			config = self.r.get_wiki_page(self.subreddit,"twitchbot_config").content_md
 			try:

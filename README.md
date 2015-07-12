@@ -16,10 +16,10 @@ This will create the following wiki pages (customizable in default_wiki_config.j
     # The imported config from default_wiki_config.json
     /wiki/twitchbot_config 
 
-    # A list of banned twitch.tv usernames seperated by newlines
+    # A list of banned twitch.tv usernames separated by newlines
     /wiki/banned_streams 
 
-     # A list of twitch.tv usernames seperated by newlines
+     # A list of twitch.tv usernames separated by newlines
     /wiki/streams
 
 setup.py will also print out a string for you to put into your sidebar to allow people to PM the bot their livestreams in the correct format:
