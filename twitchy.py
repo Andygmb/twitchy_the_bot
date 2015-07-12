@@ -1,15 +1,15 @@
-
 import re
-
-from config import username, password, subreddit
-
-import requests
-import praw
-import HTMLParser
+import os
 import json
-from PIL import Image
+import HTMLParser
 from StringIO import StringIO
 
+
+import praw
+import requests
+from PIL import Image
+
+from config import username, password, subreddit
 
 def chunker(seq, size):
     return (seq[pos:pos + size] for pos in xrange(0, len(seq), size))
@@ -132,11 +132,11 @@ class configuration():
             self.wikilog("Couldn't find the stream markers in /wiki/{}".format(self.config["wikipages"]["stream_location"]))
             raise
         livestreams_string = "".join(livestreams.streams).encode("ascii", "ignore")
-        if content[start:end] != "{} {} {}".format(self.config["stream_marker_start"],livestreams_string,self.config["stream_marker_end"]):
+        if content[start:end] != "{}\n\n{}\n\n{}".format(self.config["stream_marker_start"],livestreams_string,self.config["stream_marker_end"]):
             print "Updating sidebar"
             content = content.replace(
                 content[start:end],
-                "{} {} {}".format(self.config["stream_marker_start"],livestreams_string,self.config["stream_marker_end"])
+                "{}\n\n{}\n\n{}".format(self.config["stream_marker_start"],livestreams_string,self.config["stream_marker_end"])
             )
             self.r.edit_wiki_page(self.subreddit, self.config["wikipages"]["stream_location"], content.encode("utf8"), reason="Updating livestreams")
             return True
@@ -221,7 +221,8 @@ class livestreams():
             bbox = (xpos, ypos)
             spritesheet.paste(img,bbox)
             ypos = ypos + height
-        spritesheet.save("img.png")
+        path_to_file = os.path.join(os.path.dirname(os.path.realpath(__file__)), "img.png")
+        spritesheet.save(path_to_file)
 
 
 if __name__ == "__main__":
