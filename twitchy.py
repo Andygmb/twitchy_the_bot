@@ -57,52 +57,56 @@ class configuration():
         return results
 
     def check_inbox(self):
-        streams = []
-        inbox = self.r.get_inbox()
-        print "Checking inbox for new messages"
-        for message in inbox:
-            if message.new \
-                    and message.subject == "Twitch.tv request /r/{}".format(self.subreddit):
-                message_content = message.body.split()[0]
-                try:
-                    re_pattern = 'twitch.tv/(\w+)'
-                    # pattern matches twitch username in the first group
-                    re_result = re.search(re_pattern, message_content)
-                    if re_result:
-                        stream_name = re_result.group(1).lower()
-                    # extract the username stored in regex group 1
-                    else:
+        if self.config["accept_messages"].lower() not in ["false", "no", "n"]:
+            streams = []
+            inbox = self.r.get_inbox()
+            print "Checking inbox for new messages"
+            for message in inbox:
+                if message.new \
+                        and message.subject == "Twitch.tv request /r/{}".format(self.subreddit):
+                    message_content = message.body.split()[0]
+                    try:
+                        re_pattern = 'twitch.tv/(\w+)'
+                        # pattern matches twitch username in the first group
+                        re_result = re.search(re_pattern, message_content)
+                        if re_result:
+                            stream_name = re_result.group(1).lower()
+                        # extract the username stored in regex group 1
+                        else:
+                            print "Could not find stream name in message."
+                            continue # skip to next message
+                    except ValueError:
+                        message.mark_as_read()
+                        stream_name = "null"
                         print "Could not find stream name in message."
-                        continue # skip to next message
-                except ValueError:
-                    message.mark_as_read()
-                    stream_name = "null"
-                    print "Could not find stream name in message."
 
-                if "twitch.tv/" in message_content \
-                        and len(stream_name) <=25 \
-                        and stream_name not in self.banned \
-                        and stream_name not in self.streams:
-                    streams.append(stream_name)
-                    message.reply(self.config["messages"]["success"].format(subreddit=self.subreddit))
-                    message.mark_as_read()
+                    if "twitch.tv/" in message_content \
+                            and len(stream_name) <=25 \
+                            and stream_name not in self.banned \
+                            and stream_name not in self.streams:
+                        streams.append(stream_name)
+                        message.reply(self.config["messages"]["success"].format(subreddit=self.subreddit))
+                        message.mark_as_read()
 
-                elif stream_name in self.banned:
-                    message.reply(self.config["messages"]["banned"].format(subreddit=self.subreddit))
-                    message.mark_as_read()
+                    elif stream_name in self.banned:
+                        message.reply(self.config["messages"]["banned"].format(subreddit=self.subreddit))
+                        message.mark_as_read()
 
-                elif stream_name in self.streams:
-                    message.reply(self.config["messages"]["already_exists"].format(subreddit=self.subreddit))
-                    message.mark_as_read()
+                    elif stream_name in self.streams:
+                        message.reply(self.config["messages"]["already_exists"].format(subreddit=self.subreddit))
+                        message.mark_as_read()
 
-        if streams:
-            new_streams = list(set([stream for stream in streams if stream not in [self.streams, self.banned]]))
-            self.streams.extend(new_streams)
-            self.subreddit.edit_wiki_page(
-                self.config["wikipages"]["stream_list"],
-                "\n".join(self.streams),
-                reason="Adding stream(s): " + ", ".join(new_streams)
-            )
+            if streams:
+                new_streams = list(set([stream for stream in streams if stream not in [self.streams, self.banned]]))
+                self.streams.extend(new_streams)
+                self.subreddit.edit_wiki_page(
+                    self.config["wikipages"]["stream_list"],
+                    "\n".join(self.streams),
+                    reason="Adding stream(s): " + ", ".join(new_streams)
+                )
+        else:
+            print "Skipping inbox check as accept_messages config is set to False."
+            pass
 
     def update_stylesheet(self):
         print "Uploading thumbnail image(s)"
@@ -118,22 +122,21 @@ class configuration():
 
     def update_sidebar(self):
         print "Updating sidebar"
-        sidebar = self.r.get_settings(self.subreddit)
-        submit_text = HTMLParser.HTMLParser().unescape(sidebar["submit_text"])
-        desc = HTMLParser.HTMLParser().unescape(sidebar['description'])
+        stream_location = self.r.get_wiki_page(self.subreddit, self.config["wikipages"]["stream_location"])
+        content = stream_location.content_md
         try:
-            start = desc.index(self.config["stream_marker_start"])
-            end = desc.index(self.config["stream_marker_end"]) + len(self.config["stream_marker_end"])
+            start = content.index(self.config["stream_marker_start"])
+            end = content.index(self.config["stream_marker_end"]) + len(self.config["stream_marker_end"])
         except ValueError:
-            print "Couldn't find the stream markers in the sidebar"
-            self.wikilog("Couldn't find the stream markers in the sidebar.")
+            print "Couldn't find the stream markers in /wiki/{}".format(self.config["wikipages"]["stream_location"])
+            self.wikilog("Couldn't find the stream markers in /wiki/{}".format(self.config["wikipages"]["stream_location"]))
             raise
         livestreams_string = "".join(livestreams.streams).encode("ascii", "ignore")
-        desc = desc.replace(
-            desc[start:end],
+        desc = content.replace(
+            content[start:end],
             "{} {} {}".format(self.config["stream_marker_start"],livestreams_string,self.config["stream_marker_end"])
         )
-        self.subreddit.update_settings(description=desc.encode('utf8'), submit_text=submit_text)
+        self.r.edit_wiki_page(self.subreddit, self.config["wikipages"]["stream_location"], content.encode("utf8"), reason="Updating livestreams")
 
 
 class livestreams():
