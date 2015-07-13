@@ -10,7 +10,7 @@ import praw
 import requests
 from PIL import Image
 
-from config import username, password, subreddit
+from config import subreddit
 
 def chunker(seq, size):
     return (seq[pos:pos + size] for pos in xrange(0, len(seq), size))
@@ -45,7 +45,13 @@ class configuration():
     def reddit_setup(self):
         print "Logging in"
         r = praw.Reddit("Sidebar livestream updater for /r/{} by /u/andygmb ".format(subreddit))
-        r.login(username=username, password=password)
+        try:
+            r.refresh_access_information()
+        # TODO: not sure which of these may be excepted; need to test further
+        except praw.errors.APIException, e:
+            raise e
+        except praw.errors.ClientException(), e:
+            raise e
         sub = r.get_subreddit(subreddit)
         return r, sub
 

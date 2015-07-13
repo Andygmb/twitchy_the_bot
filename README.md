@@ -16,10 +16,10 @@ This will create the following wiki pages (customizable in default_wiki_config.j
     # The imported config from default_wiki_config.json
     /wiki/twitchbot_config 
 
-    # A list of banned twitch.tv usernames seperated by newlines
+    # A list of banned twitch.tv usernames separated by newlines
     /wiki/banned_streams 
 
-     # A list of twitch.tv usernames seperated by newlines
+     # A list of twitch.tv usernames separated by newlines
     /wiki/streams
 
 setup.py will also print out a string for you to put into your sidebar to allow people to PM the bot their livestreams in the correct format:
@@ -27,6 +27,32 @@ setup.py will also print out a string for you to put into your sidebar to allow 
 `http://www.reddit.com/message/compose?to={username}&subject=Twitch.tv+request+%2Fr%2F{subreddit}&message=http%3A%2F%2Fwww.twitch.tv%2F{username}`
 
 with your bots username and the subreddit it's running in (taken from config.py) substituted where marked.
+
+### OAuth configuration
+The use of OAuth in PRAW requires a praw.ini file located in your config folder (varies by platform) or in the root directory if this project (overrides global settings)
+
+No matter where you put it, you need a praw.ini file with the following included:
+```
+[DEFAULT]
+domain: www.reddit.com
+oauth_client_id: <client_id>
+oauth_client_secret: <secret_access_key>
+oauth_redirect_uri: http://127.0.0.1:65010/authorize_callback
+oauth_refresh_token: <refresh_token>
+```
+#### Authenticating with OAuth
+
+There a few steps to authenticate via OAuth:
+1. Get the `client_id` and `secret_access_key` from [Reddit](https://www.reddit.com/prefs/apps/)
+2. Copy `client_id` to praw.ini as `oath_client_id` and `secret_access_key` as `oauth_client_secret` in praw.ini
+3. Run `authenticate.py`. It will open up your default web browser and present a page to grant access to the application
+4. You will be redirected to the url at `oauth_redirect_uri` in praw.ini. If you leave the default value, you will likely get a page not found error. This is okay. All you need is the code at the end of URL: `http://127.0.0.1:65010/authorize_callback?state=obtainingAuthentication&code=THIS_IS_THE_CODE_YOU_WANT`
+5. Copy the code into the prompt and press enter
+6. The script gets the refresh token and prints it to stdout. Copy the refresh token to praw.ini as `oauth_refresh_token`
+
+Now you will be good to go! You will not have to re-run authenticate.py unless you de-authorize your application from Reddit or you allow your refresh token to expire.
+
+See [here](http://praw.readthedocs.org/en/latest/pages/oauth.html) for more details on the PRAW implementation of OAuth
 
 
 ###twitchbot_config
