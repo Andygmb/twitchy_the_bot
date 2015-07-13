@@ -77,8 +77,8 @@ All of the following config is editable in default_wiki_config.json before you r
 
 `messages` are the messages the bot will send if someone PMs it to add a stream - `success` is sent when they send a stream and it is added to `/wiki/streams`, `banned` is if they send a stream that is in `/wiki/banned_streams`, `already_exists` is if they send a stream that already exists in `/wiki/streams`
 
-`wikipages`
-
+    wikipages
+    
     `error_log` -   The wiki page of most errors encountered by twitchy - however, 
                     this is not 100% foolproof and may not log all possible errors.
     
