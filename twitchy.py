@@ -2,6 +2,7 @@ import re
 import os
 import json
 import HTMLParser
+from random import shuffle
 from StringIO import StringIO
 
 
@@ -131,18 +132,29 @@ class configuration():
             print "Couldn't find the stream markers in /wiki/{}".format(self.config["wikipages"]["stream_location"])
             self.wikilog("Couldn't find the stream markers in /wiki/{}".format(self.config["wikipages"]["stream_location"]))
             raise
-        livestreams_string = "".join(livestreams.streams).encode("ascii", "ignore")
-        if content[start:end] != "{}\n\n{}\n\n{}".format(self.config["stream_marker_start"],livestreams_string,self.config["stream_marker_end"]):
+        livestreams_string = "".join([stream["stream_output"] for stream in livestreams.streams])
+        if content[start:end] != "{}\n\n{}\n\n{}".format(self.config["stream_marker_start"],livestreams_string.encode("ascii", "ignore"),self.config["stream_marker_end"]):
             print "Updating sidebar"
             content = content.replace(
                 content[start:end],
-                "{}\n\n{}\n\n{}".format(self.config["stream_marker_start"],livestreams_string,self.config["stream_marker_end"])
+                "{}\n\n{}\n\n{}".format(self.config["stream_marker_start"],livestreams_string.encode("ascii", "ignore"),self.config["stream_marker_end"])
             )
-            self.r.edit_wiki_page(self.subreddit, self.config["wikipages"]["stream_location"], content.encode("utf8"), reason="Updating livestreams")
+            self.r.edit_wiki_page(self.subreddit, self.config["wikipages"]["stream_location"], content, reason="Updating livestreams")
             return True
         else:
             print "The stream content is exactly the same as what is already on https://www.reddit.com/r/{}/wiki/{}. Skipping update.".format(self.subreddit, self.config["wikipages"]["stream_location"])
             return False
+
+    def sort_streams(self, streams):
+        reverse = False
+        if self.config["sort_type"].lower() == "descending":
+            reverse = True
+        if self.config["sort_type"].lower() == "random":
+            return shuffle(streams)
+        if self.config["sort_by"].lower() in ["viewercount", "views", "view", "viewers", "viewer"]:
+            return sorted(streams, key=lambda stream:stream["json_data"]["viewers"], reverse=reverse)
+        if self.config["sort_by"].lower() == "title":
+            return sorted(streams, key=lambda stream:stream["json_data"]["channel"]["status"])
 
     def bans(self):
         banned_streams = self.wikipage_check(self.config["wikipages"]["ban_list"])
@@ -165,20 +177,19 @@ class livestreams():
     def __init__(self, config):
         self.config = config # This is kind of retarded, should probably subclass or just have the entire bot in one class.
         self.streams = []
-        self.thumbnails = []
 
     def check_stream_length(self):
         max_streams = int(self.config.config["max_streams_displayed"])
         if len(self.streams) > max_streams:
             self.streams = self.streams[:max_streams]
-            self.thumbnails = self.thumbnails[:max_streams]
             print "There are more than {max_stream_count} streams currently \
 			- the amount displayed has been reduced to {max_stream_count}. \
 			You can increase this in your config.py file.".format(max_stream_count=max_streams)
         if len(self.streams):
+            self.streams = self.config.sort_streams(self.streams)
             return True
         else:
-            self.streams = self.config.config["no_streams_string"]
+            self.streams = [{"stream_output":self.config.config["no_streams_string"]}]
             return False
 
     def get_livestreams(self):
@@ -196,28 +207,25 @@ class livestreams():
             except:
                 pass
 
+
     def parse_stream_info(self, data):
         print "Parsing stream info"
         allowed_games = [str(game.lower()) for game in self.config.config["allowed_games"]]
         for streamer in data["streams"]:
             if not len(allowed_games) or streamer["game"].lower() in allowed_games:
                 # Removing characters that can break reddit formatting
-                game = streamer["game"].lower()
-                game = re.sub(r'[*)(>/#\[\]\\]*', '', game).replace("\n", "").encode("utf-8")
-                title = streamer["channel"]["status"]
-                title = re.sub(r'[*)(>/#\[\]\\]*', '', title).replace("\n", "").encode("utf-8")
+                game = re.sub(r'[*)(>/#\[\]\\]*', '', streamer["game"]).replace("\n", "").encode("utf-8")
+                title = re.sub(r'[*)(>/#\[\]\\]*', '', streamer["channel"]["status"]).replace("\n", "").encode("utf-8")
                 #Add elipises if title is too long
                 if len(title) >= int(self.config.config["max_title_length"]):
                     title = title[0:int(self.config.config["max_title_length"]) - 3] + "..."
-                name = streamer["channel"]["name"]
-                name = re.sub(r'[*)(>/#\[\]\\]*', '', name).replace("\n", "").encode("utf-8")
-                display_name = streamer["channel"]["display_name"]
-                display_name = re.sub(r'[*)(>/#\[\]\\]*', '', display_name).replace("\n", "").encode("utf-8")
+                name = re.sub(r'[*)(>/#\[\]\\]*', '', streamer["channel"]["name"]).replace("\n", "").encode("utf-8")
+                display_name = re.sub(r'[*)(>/#\[\]\\]*', '', streamer["channel"]["display_name"]).replace("\n", "").encode("utf-8")
                 viewercount = "{:,}".format(streamer["viewers"])
-                self.thumbnails.append(streamer["preview"]["template"])
-                self.streams.append(
-                    HTMLParser.HTMLParser().unescape(self.config.config["string_format"].format(name=name, title=title, viewercount=viewercount, display_name=display_name, game=game))
-                )
+                self.streams.append({
+                    "stream_output":HTMLParser.HTMLParser().unescape(self.config.config["string_format"].format(name=name, title=title, viewercount=viewercount, display_name=display_name, game=game)),
+                    "json_data":streamer
+                })
 
     def create_spritesheet(self):
         print "Creating image spritesheet"
@@ -226,7 +234,8 @@ class livestreams():
         int(self.config.config["thumbnail_size"]["height"])
         )
         preview_images = []
-        for url in self.thumbnails:
+        for stream in self.streams:
+            url = stream["json_data"]["preview"]["template"]
             preview_data = requests.get(url.format(width=str(width), height=str(height) )).content
             # Download image
             preview_img = Image.open(StringIO(preview_data))
