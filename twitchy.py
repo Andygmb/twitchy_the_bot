@@ -133,11 +133,12 @@ class configuration():
             self.wikilog("Couldn't find the stream markers in /wiki/{}".format(self.config["wikipages"]["stream_location"]))
             raise
         livestreams_string = "".join([stream["stream_output"] for stream in livestreams.streams])
-        if content[start:end] != "{}\n\n{}\n\n{}".format(self.config["stream_marker_start"],livestreams_string.encode("ascii", "ignore"),self.config["stream_marker_end"]):
+        content = content.encode("utf-8")
+        if content[start:end] != "{}\n\n{}\n\n{}".format(self.config["stream_marker_start"],livestreams_string,self.config["stream_marker_end"]):
             print "Updating sidebar"
             content = content.replace(
                 content[start:end],
-                "{}\n\n{}\n\n{}".format(self.config["stream_marker_start"],livestreams_string.encode("ascii", "ignore"),self.config["stream_marker_end"])
+                "{}\n\n{}\n\n{}".format(self.config["stream_marker_start"],livestreams_string,self.config["stream_marker_end"])
             )
             self.r.edit_wiki_page(self.subreddit, self.config["wikipages"]["stream_location"], content, reason="Updating livestreams")
             return True
@@ -213,19 +214,22 @@ class livestreams():
         allowed_games = [str(game.lower()) for game in self.config.config["allowed_games"]]
         for streamer in data["streams"]:
             if not len(allowed_games) or streamer["game"].lower() in allowed_games:
-                # Removing characters that can break reddit formatting
-                game = re.sub(r'[*)(>/#\[\]\\]*', '', streamer["game"]).replace("\n", "").encode("utf-8")
-                title = re.sub(r'[*)(>/#\[\]\\]*', '', streamer["channel"]["status"]).replace("\n", "").encode("utf-8")
-                #Add elipises if title is too long
-                if len(title) >= int(self.config.config["max_title_length"]):
-                    title = title[0:int(self.config.config["max_title_length"]) - 3] + "..."
-                name = re.sub(r'[*)(>/#\[\]\\]*', '', streamer["channel"]["name"]).replace("\n", "").encode("utf-8")
-                display_name = re.sub(r'[*)(>/#\[\]\\]*', '', streamer["channel"]["display_name"]).replace("\n", "").encode("utf-8")
-                viewercount = "{:,}".format(streamer["viewers"])
-                self.streams.append({
-                    "stream_output":HTMLParser.HTMLParser().unescape(self.config.config["string_format"].format(name=name, title=title, viewercount=viewercount, display_name=display_name, game=game)),
-                    "json_data":streamer
-                })
+                try:
+                    title = re.sub(r'[*)(>/#\[\]\\]*', '', streamer["channel"]["status"]).replace("\n", "").encode("utf-8")
+                    # Removing characters that can break reddit formatting
+                    game = re.sub(r'[*)(>/#\[\]\\]*', '', streamer["game"]).replace("\n", "").encode("utf-8")
+                    #Add elipises if title is too long
+                    if len(title) >= int(self.config.config["max_title_length"]):
+                        title = title[0:int(self.config.config["max_title_length"]) - 3] + "..."
+                    name = re.sub(r'[*)(>/#\[\]\\]*', '', streamer["channel"]["name"]).replace("\n", "").encode("utf-8")
+                    display_name = re.sub(r'[*)(>/#\[\]\\]*', '', streamer["channel"]["display_name"]).replace("\n", "").encode("utf-8")
+                    viewercount = "{:,}".format(streamer["viewers"])
+                    self.streams.append({
+                        "stream_output":HTMLParser.HTMLParser().unescape(self.config.config["string_format"].encode("utf-8").format(name=name, title=title, viewercount=viewercount, display_name=display_name, game=game)),
+                        "json_data":streamer
+                    })
+                except KeyError:
+                    pass
 
     def create_spritesheet(self):
         print "Creating image spritesheet"
