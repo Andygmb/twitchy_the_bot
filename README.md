@@ -79,16 +79,18 @@ All of the following config is editable in default_wiki_config.json before you r
 
 `wikipages`
 
-    `error_log` -   The wiki page of most errors encountered by twitchy - however, this is not 100% foolproof and may 
-                    not log all possible errors.
+    `error_log` -   The wiki page of most errors encountered by twitchy - however, 
+                    this is not 100% foolproof and may not log all possible errors.
     
-    `stream_list` - The wiki page that contains the list of livestreams that twitchy will check every time it's run.
+    `stream_list` - The wiki page that contains the list of livestreams that twitchy 
+                    will check every time it's run.
     
-    `ban_list`  -   The wiki page that contains banned streams. Any streams listed here will be banned the 
-                    next time twitchy is ran. 
+    `ban_list`  -   The wiki page that contains banned streams. Any streams listed
+                    here will be banned the next time twitchy is ran. 
         
-    `stream_location` - The wiki page that twitchy will add streams to. By default this is your subreddit sidebar, but 
-                        can be changed to any wiki page (e.g. `"stream_location":"index",`).
+    `stream_location` - The wiki page that twitchy will add streams to. By default 
+                        this is your subreddit sidebar, but can be changed to any 
+                        wiki page (e.g. `"stream_location":"index",`).
 
 
 `accept_messages` Defaults to "True", if set to "False" the bot will never check its inbox and never add any streams to /wiki/stream_list
