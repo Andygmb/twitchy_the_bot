@@ -44,7 +44,10 @@ if __name__ == "__main__":
     for wikipage in config["wikipages"].values():
         try:
             if not "config/" in wikipage:
-                content = r.get_wiki_page(sub, wikipage).content_md
+                try:
+                    content = r.get_wiki_page(sub, wikipage).content_md
+                except:
+                    content = ""
                 print "Attempting to set up https://www.reddit.com/r/{}/wiki/{} ...".format(subreddit, wikipage)
                 r.edit_wiki_page(sub, wikipage, content.encode("utf8"), "Initial setup from setup.py")
                 print "Success!\n".format(wikipage)
