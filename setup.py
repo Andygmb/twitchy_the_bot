@@ -15,7 +15,7 @@ if __name__ == "__main__":
     print "Attempting to log in..."
     r = praw.Reddit("Sidebar livestream updater for /r/{} by /u/andygmb ".format(subreddit))
     try:
-        r.login(username=username, password=password)
+        r.login(username=username, password=password, disable_warning=True)
         print "Success!\n"
     except praw.errors.InvalidUserPass:
         print "Make sure you have your bot's details in config.py"
@@ -35,6 +35,7 @@ if __name__ == "__main__":
     try:
         print "Attempting to add default_wiki_config.json to https://www.reddit.com/r/{}/twitchbot_config ...".format(subreddit)
         r.edit_wiki_page(sub, "twitchbot_config", prettyconfig, "Initial setup from setup.py")
+        r.get_wiki_page(sub, "twitchbot_config").edit_settings(permlevel=2, listed=True)
         print "Success!\n".format(subreddit)
     except requests.exceptions.HTTPError:
         print "Couldn't access https://www.reddit.com/r/{}/wiki/{}, reddit may be down.".format(subreddit, "twitchbot_config")
@@ -45,11 +46,14 @@ if __name__ == "__main__":
         try:
             if not "config/" in wikipage:
                 try:
-                    content = r.get_wiki_page(sub, wikipage).content_md
+                    page = r.get_wiki_page(sub, wikipage)
+                    content = page.content_md
                 except:
+                    page = r.get_wiki_page(sub, wikipage)
                     content = ""
                 print "Attempting to set up https://www.reddit.com/r/{}/wiki/{} ...".format(subreddit, wikipage)
                 r.edit_wiki_page(sub, wikipage, content.encode("utf8"), "Initial setup from setup.py")
+                page.edit_settings(permlevel=2, listed=True)
                 print "Success!\n".format(wikipage)
         except requests.exceptions.HTTPError:
             print "Couldn't access https://www.reddit.com/r/{}/wiki/{}, reddit may be down.".format(subreddit, wikipage)
