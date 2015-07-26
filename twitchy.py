@@ -124,23 +124,24 @@ class configuration():
         self.subreddit.set_stylesheet(stylesheet)
 
     def update_sidebar(self):
-        content = self.r.get_wiki_page(self.subreddit, self.config["wikipages"]["stream_location"]).content_md
+        content = self.r.get_wiki_page(self.subreddit, self.config["wikipages"]["stream_location"]).content_md.encode('utf-8')
+        start_marker = self.config["stream_marker_start"].encode("utf-8")
+        end_marker = self.config["stream_marker_end"].encode("utf-8")
         try:
-            start = content.index(self.config["stream_marker_start"])
-            end = content.index(self.config["stream_marker_end"]) + len(self.config["stream_marker_end"])
+            start = content.index(start_marker)
+            end = content.index(end_marker) + len(end_marker)
         except ValueError:
             print "Couldn't find the stream markers in /wiki/{}".format(self.config["wikipages"]["stream_location"])
             self.wikilog("Couldn't find the stream markers in /wiki/{}".format(self.config["wikipages"]["stream_location"]))
             raise
         livestreams_string = "".join([stream["stream_output"] for stream in livestreams.streams])
-        content = content.encode("utf-8")
-        if content[start:end] != "{}\n\n{}\n\n{}".format(self.config["stream_marker_start"],livestreams_string,self.config["stream_marker_end"]):
+        if content[start:end] != "{}\n\n{}\n\n{}".format(start_marker,livestreams_string,end_marker):
             print "Updating sidebar"
             content = content.replace(
                 content[start:end],
-                "{}\n\n{}\n\n{}".format(self.config["stream_marker_start"],livestreams_string,self.config["stream_marker_end"])
+                "{}\n\n{}\n\n{}".format(start_marker,livestreams_string,end_marker)
             )
-            self.r.edit_wiki_page(self.subreddit, self.config["wikipages"]["stream_location"], content, reason="Updating livestreams")
+            self.r.edit_wiki_page(self.subreddit, self.config["wikipages"]["stream_location"], content.decode("utf-8"), reason="Updating livestreams")
             return True
         else:
             print "The stream content is exactly the same as what is already on https://www.reddit.com/r/{}/wiki/{}. Skipping update.".format(self.subreddit, self.config["wikipages"]["stream_location"])
@@ -185,7 +186,7 @@ class livestreams():
             self.streams = self.streams[:max_streams]
             print "There are more than {max_stream_count} streams currently \
 			- the amount displayed has been reduced to {max_stream_count}. \
-			You can increase this in your config.py file.".format(max_stream_count=max_streams)
+			You can increase this in your /wiki/twitchbot_config.".format(max_stream_count=max_streams)
         if len(self.streams):
             self.streams = self.config.sort_streams(self.streams)
             return True
