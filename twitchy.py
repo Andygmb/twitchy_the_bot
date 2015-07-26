@@ -141,7 +141,12 @@ class configuration():
                 content[start:end],
                 "{}\n\n{}\n\n{}".format(start_marker,livestreams_string,end_marker)
             )
-            self.r.edit_wiki_page(self.subreddit, self.config["wikipages"]["stream_location"], content.decode("utf-8"), reason="Updating livestreams")
+            try:
+                self.r.edit_wiki_page(self.subreddit, self.config["wikipages"]["stream_location"], content.decode("utf-8"), reason="Updating livestreams")
+            except praw.errors.Forbidden:
+                print "Maximum amount of characters (5120) reached. Please consider reducing your sidebars character limit or changing your max_streams_displayed in /wiki/twitchbot_config."
+                self.wikilog("Maximum amount of characters (5120) reached. Please consider reducing your sidebars character limit or changing your max_streams_displayed in /wiki/twitchbot_config.")
+                raise
             return True
         else:
             print "The stream content is exactly the same as what is already on https://www.reddit.com/r/{}/wiki/{}. Skipping update.".format(self.subreddit, self.config["wikipages"]["stream_location"])
