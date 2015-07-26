@@ -194,6 +194,8 @@ class livestreams():
 			You can increase this in your /wiki/twitchbot_config.".format(max_stream_count=max_streams)
         if len(self.streams):
             self.streams = self.config.sort_streams(self.streams)
+            for index, stream in enumerate(self.streams):
+                stream["stream_output"] = stream["stream_output"].format(index=index)
             return True
         else:
             self.streams = [{"stream_output":self.config.config["no_streams_string"]}]
@@ -231,7 +233,7 @@ class livestreams():
                     display_name = re.sub(r'[*)(>/#\[\]\\]*', '', streamer["channel"]["display_name"]).replace("\n", "").encode("utf-8")
                     viewercount = "{:,}".format(streamer["viewers"])
                     self.streams.append({
-                        "stream_output":HTMLParser.HTMLParser().unescape(self.config.config["string_format"].encode("utf-8").format(name=name, title=title, viewercount=viewercount, display_name=display_name, game=game)),
+                        "stream_output":HTMLParser.HTMLParser().unescape(self.config.config["string_format"].encode("utf-8").format(name=name, title=title, viewercount=viewercount, display_name=display_name, game=game, index="{index}")),
                         "json_data":streamer
                     })
                 except KeyError:
