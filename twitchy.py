@@ -1,6 +1,7 @@
 import re
 import os
 import json
+import warnings
 import HTMLParser
 from random import shuffle
 from StringIO import StringIO
@@ -25,7 +26,13 @@ class configuration():
 
     def get_config(self):
         try:
-            config = self.r.get_wiki_page(self.subreddit,"twitchbot_config").content_md
+            wikipage = self.r.get_wiki_page(self.subreddit,"twitchbot_config")
+            settings = wikipage.get_settings()
+            if settings["permlevel"] == 0:
+                subreddit_settings = self.r.get_settings(subreddit)
+                if subreddit_settings["wikimode"] == "anyone":
+                    warnings.warn("Your subreddit's wiki pages are set to allow anyone to edit them. Please consider changing this to mod-only on http://www.reddit.com/r/{subreddit}/wiki/settings/twitchbot_config".format(subreddit=subreddit), UserWarning)
+            config = wikipage.content_md
             try:
                 config = json.loads(config)
             except ValueError:
@@ -45,7 +52,7 @@ class configuration():
     def reddit_setup(self):
         print "Logging in"
         r = praw.Reddit("Sidebar livestream updater for /r/{} by /u/andygmb ".format(subreddit))
-        r.login(username=username, password=password)
+        r.login(username=username, password=password, disable_warning=True)
         sub = r.get_subreddit(subreddit)
         return r, sub
 
