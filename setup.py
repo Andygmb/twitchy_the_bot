@@ -43,28 +43,29 @@ if __name__ == "__main__":
         raise
 
     for wikipage in config["wikipages"].values():
-        try:
-            if not "config/" in wikipage:
-                try:
-                    page = r.get_wiki_page(sub, wikipage)
-                    content = page.content_md
-                except:
-                    page = r.get_wiki_page(sub, wikipage)
+            try:
+                if not "config/" in wikipage:
                     content = ""
-                print "Attempting to set up https://www.reddit.com/r/{}/wiki/{} ...".format(subreddit, wikipage)
-                r.edit_wiki_page(sub, wikipage, content.encode("utf8"), "Initial setup from setup.py")
-                page.edit_settings(permlevel=2, listed=True)
-                print "Success!\n".format(wikipage)
-        except requests.exceptions.HTTPError:
-            print "Couldn't access https://www.reddit.com/r/{}/wiki/{}, reddit may be down.".format(subreddit, wikipage)
-            wikilog(r, sub, wikipage, "Couldn't access wiki page, reddit may be down.")
-            raise
+                    try:
+                        page = r.get_wiki_page(sub, wikipage)
+                        content = page.content_md
+                    except praw.errors.NotFound:
+                        pass
+                    print "Attempting to set up https://www.reddit.com/r/{}/wiki/{} ...".format(subreddit, wikipage)
+                    r.edit_wiki_page(sub, wikipage, content.encode("utf8"), "Initial setup from setup.py")
+                    r.get_wiki_page(sub, wikipage).edit_settings(permlevel=2, listed=True)
+                    print "Success!\n".format(wikipage)
+            except requests.exceptions.HTTPError:
+                print "Couldn't access https://www.reddit.com/r/{}/wiki/{}, reddit may be down.".format(subreddit, wikipage)
+                wikilog(r, sub, wikipage, "Couldn't access wiki page, reddit may be down.")
+                raise
+    
+        if config["accept_messages"].lower() in ["true", "yes", "y"]:
+            print "Setup.py finished!\n\n"
+            print "By default the bot will respond to PMs and update https://wwww.reddit.com/r/{}/wiki/{} with any twitch.tv links users send it.".format(subreddit, config["wikipages"]["stream_list"])
+            print "Place the following link in your sidebar for people to message the bot twitch.tv streams:"
+            print "http://www.reddit.com/message/compose?to={username}&subject=Twitch.tv+request+%2Fr%2F{subreddit}&message=http%3A%2F%2Fwww.twitch.tv%2F{username}".format(username=username, subreddit=subreddit)
+            print '\nIf you do not want the bot to update the list of streams through PM, please edit https://wwww.reddit.com/r/{}/wiki/twitchbot_config and set "accept_messages" to "False".'.format(subreddit)
+        else:
+            print "Setup.py finished!\n\n"
 
-    if config["accept_messages"].lower() in ["true", "yes", "y"]:
-        print "Setup.py finished!\n\n"
-        print "By default the bot will respond to PMs and update https://wwww.reddit.com/r/{}/wiki/{} with any twitch.tv links users send it.".format(subreddit, config["wikipages"]["stream_list"])
-        print "Place the following link in your sidebar for people to message the bot twitch.tv streams:"
-        print "http://www.reddit.com/message/compose?to={username}&subject=Twitch.tv+request+%2Fr%2F{subreddit}&message=http%3A%2F%2Fwww.twitch.tv%2F{username}".format(username=username, subreddit=subreddit)
-        print '\nIf you do not want the bot to update the list of streams through PM, please edit https://wwww.reddit.com/r/{}/wiki/twitchbot_config and set "accept_messages" to "False".'.format(subreddit)
-    else:
-        print "Setup.py finished!\n\n"
