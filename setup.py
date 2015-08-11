@@ -60,12 +60,12 @@ if __name__ == "__main__":
                 wikilog(r, sub, wikipage, "Couldn't access wiki page, reddit may be down.")
                 raise
     
-        if config["accept_messages"].lower() in ["true", "yes", "y"]:
-            print "Setup.py finished!\n\n"
-            print "By default the bot will respond to PMs and update https://wwww.reddit.com/r/{}/wiki/{} with any twitch.tv links users send it.".format(subreddit, config["wikipages"]["stream_list"])
-            print "Place the following link in your sidebar for people to message the bot twitch.tv streams:"
-            print "http://www.reddit.com/message/compose?to={username}&subject=Twitch.tv+request+%2Fr%2F{subreddit}&message=http%3A%2F%2Fwww.twitch.tv%2F{username}".format(username=username, subreddit=subreddit)
-            print '\nIf you do not want the bot to update the list of streams through PM, please edit https://wwww.reddit.com/r/{}/wiki/twitchbot_config and set "accept_messages" to "False".'.format(subreddit)
-        else:
-            print "Setup.py finished!\n\n"
+    if config["accept_messages"].lower() in ["true", "yes", "y"]:
+        print "Setup.py finished!\n\n"
+        print "By default the bot will respond to PMs and update https://wwww.reddit.com/r/{}/wiki/{} with any twitch.tv links users send it.".format(subreddit, config["wikipages"]["stream_list"])
+        print "Place the following link in your sidebar for people to message the bot twitch.tv streams:"
+        print "http://www.reddit.com/message/compose?to={username}&subject=Twitch.tv+request+%2Fr%2F{subreddit}&message=http%3A%2F%2Fwww.twitch.tv%2F{username}".format(username=username, subreddit=subreddit)
+        print '\nIf you do not want the bot to update the list of streams through PM, please edit https://wwww.reddit.com/r/{}/wiki/twitchbot_config and set "accept_messages" to "False".'.format(subreddit)
+    else:
+        print "Setup.py finished!\n\n"
 
