@@ -164,11 +164,13 @@ class configuration():
         if self.config["sort_type"].lower() == "descending":
             reverse = True
         if self.config["sort_type"].lower() == "random":
-            return shuffle(streams)
+            shuffle(streams)
+            return streams
         if self.config["sort_by"].lower() in ["viewercount", "views", "view", "viewers", "viewer"]:
             return sorted(streams, key=lambda stream:stream["json_data"]["viewers"], reverse=reverse)
         if self.config["sort_by"].lower() == "title":
             return sorted(streams, key=lambda stream:stream["json_data"]["channel"]["status"])
+        return streams
 
     def bans(self):
         banned_streams = self.wikipage_check(self.config["wikipages"]["ban_list"])
