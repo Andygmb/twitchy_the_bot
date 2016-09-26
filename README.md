@@ -71,7 +71,7 @@ All of the following config is editable in default_wiki_config.json before you r
 
 `thumbnail_size` is the width/height of the thumbnails that will be uploaded in a spritesheet to your subreddit. Make sure you have less than 50 images uploaded to your stylesheet, or the bot will not be able to upload the thumbnails.
 
-`stream_marker_start` and `stream_marker_end` are the two markers you must put in your sidebar for the bot to work. They indicate where the livestreams will appear. The bot will not function without them and will log errors to `/wiki/twitchbot_error_log` if it can't find either marker.
+`stream_marker_start` and `stream_marker_end` are the two markers you must put in your sidebar for the bot to work. To do this add "[](#startmarker)" and "[](#endmarker)" to your sidebar. They indicate where the livestreams will appear. The bot will not function without them and will log errors to `/wiki/twitchbot_error_log` if it can't find either marker. 
 
 `max_streams_displayed` is the limit for the amount of streams that can be displayed in your sidebar at any point.
 
