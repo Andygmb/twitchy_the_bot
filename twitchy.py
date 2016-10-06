@@ -11,7 +11,7 @@ import praw
 import requests
 from PIL import Image
 
-from config import username, password, subreddit
+from config import username, password, subreddit, client_id
 
 def chunker(seq, size):
     return (seq[pos:pos + size] for pos in xrange(0, len(seq), size))
@@ -217,7 +217,7 @@ class livestreams():
             for stream in chunk:
                 api_link += stream + ","
             try:
-                data = requests.get(api_link).json()
+                data = requests.get(api_link, headers={'Client-ID':client_id}).json()
                 if data["_total"] > 0:
                     self.parse_stream_info(data)
                 else:

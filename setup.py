@@ -69,3 +69,7 @@ if __name__ == "__main__":
     else:
         print "Setup.py finished!\n\n"
 
+    print "Please make sure you add your client-id to config.py - follow the guide here"
+    print "https://blog.twitch.tv/client-id-required-for-kraken-api-calls-afbb8e95f843#.laoowt96j"
+    print "for information on obtaining a client-id for twitch.tv"
+
