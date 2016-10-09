@@ -121,7 +121,7 @@ class configuration():
     def update_stylesheet(self):
         print "Uploading thumbnail image(s)"
         try:
-            self.subreddit.upload_image("img.png", self.config["image_upload_name"].encode("utf-8"), False)
+            self.subreddit.upload_image(os.path.join(os.path.dirname(os.path.realpath(__file__)),"img.png"), self.config["image_upload_name"].encode("utf-8"), False)
         except praw.errors.APIException:
             print "Too many images uploaded."
             self.wikilog("Too many images uploaded to the stylesheet, max of 50 images allowed.")
